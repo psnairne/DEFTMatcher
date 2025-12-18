@@ -1,4 +1,3 @@
-from typing import Optional
 from hpotk import Ontology, SynonymCategory, SynonymType
 
 from deft_matcher.matcher import Matcher
@@ -21,8 +20,8 @@ class SynonymMatcher(Matcher):
     def __init__(
         self,
         ontology: Ontology,
-        synonym_categories: Optional[list[SynonymCategory]] = None,
-        synonym_types: Optional[list[SynonymType]] = None,
+        synonym_categories: list[SynonymCategory] | None = None,
+        synonym_types: list[SynonymType] | None = None,
     ) -> None:
         self._ontology = ontology
         self._allowed_synonym_categories = self._get_allowed_synonym_categories(
@@ -56,7 +55,7 @@ class SynonymMatcher(Matcher):
 
     @staticmethod
     def _get_allowed_synonym_categories(
-        provided_synonym_categories: Optional[list[SynonymCategory]],
+        provided_synonym_categories: list[SynonymCategory] | None,
     ) -> list[SynonymCategory]:
         all_synonym_categories = [
             SynonymCategory.BROAD,
@@ -72,7 +71,7 @@ class SynonymMatcher(Matcher):
 
     @staticmethod
     def _get_allowed_synonym_types(
-        provided_synonym_types: Optional[list[SynonymType]],
+        provided_synonym_types: list[SynonymType] | None,
     ) -> list[SynonymType]:
         all_synonym_types = [
             SynonymType.OBSOLETE_SYNONYM,

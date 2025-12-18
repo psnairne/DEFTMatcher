@@ -3,6 +3,11 @@ from deft_matcher.matcher import Matcher
 
 
 class DecisiveMatcher:
+    """
+    Simply a combination of a Matcher and an AmbiguityResolver.
+    Together these can unambiguously match free text to a single string.
+    """
+
     matcher: Matcher
     ambiguity_resolver: AmbiguityResolver
 

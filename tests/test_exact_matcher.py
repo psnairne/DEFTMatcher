@@ -2,7 +2,7 @@ import hpotk
 import pytest
 from hpotk import OntologyType
 
-from free_text_normaliser.matchers.exact_matcher import ExactMatcher
+from deft_matcher.matchers.exact_matcher import ExactMatcher
 
 
 @pytest.fixture
@@ -47,6 +47,3 @@ def test_exact_matcher_mondo_fail(exact_matcher_mondo):
     marfan_matches = exact_matcher_mondo.get_matches("morfan syndrome")
 
     assert len(marfan_matches) == 0
-
-
-# TODO Unit tests of the different function parts
