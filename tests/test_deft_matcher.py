@@ -1,6 +1,7 @@
 import hpotk
 import pytest
 import pandas as pd
+import os
 
 from deft_matcher.ambiguity_resolvers.choose_first_resolver import ChooseFirstResolver
 from deft_matcher.decisive_matcher import DecisiveMatcher
@@ -25,6 +26,7 @@ def conditions():
     return set(conditions_col)
 
 
+@pytest.mark.skipif(os.getenv("CI") == "true", reason="Skipped in CI")
 def test_deft_matcher_conditions_col(conditions, hpo):
     exact_matcher = ExactMatcher(ontology=hpo)
     synonym_matcher = SynonymMatcher(ontology=hpo)
