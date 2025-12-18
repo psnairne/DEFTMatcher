@@ -3,19 +3,19 @@ requires = ["setuptools>=80.9.0", "wheel==0.45.1", "setuptools_scm==8.3.1"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "robinson-group-python-template"
-description = "A template for python projects build in the robinson group"
-authors = [{ name = "Rouven Reuter" }]
+name = "deft-matcher"
+description = "Dextrous and Extendable Free Text Matcher"
+authors = [{ name = "Patrick Nairne" }]
 requires-python = ">=3.10"
 dynamic = ["dependencies", "version"]
 license = { file = "LICENSE" }
 readme = "README.md"
 
 [project.urls]
-homepage = "https://github.com/SmartMonkey-git/robinson-group-python-template"
-repository = "https://github.com/SmartMonkey-git/robinson-group-python-template.git"
-documentation = "https://github.com/SmartMonkey-git/robinson-group-python-template"
-bugtracker = "https://github.com/SmartMonkey-git/robinson-group-python-template/issues"
+homepage = "https://github.com/psnairne/DEFTMatcher"
+repository = "https://github.com/psnairne/DEFTMatcher.git"
+documentation = "https://github.com/psnairne/DEFTMatcher"
+bugtracker = "https://github.com/psnairne/DEFTMatcher/issues"
 
 [project.optional-dependencies]
 test=[]
@@ -27,8 +27,8 @@ test = {file = ["requirements/requirements_test.txt"]}
 packages.find = { where = ["src"] }
 
 [tool.setuptools_scm]
-version_file = "src/project_name/_version.py"
+version_file = "src/deft_matcher/_version.py"
 
 [tool.setuptools.dynamic]
-version = { attr = "project_name._version.version" }
+version = { attr = "deft_matcher._version.version" }
 dependencies = {file = ["requirements/requirements.txt"]}

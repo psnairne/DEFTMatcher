@@ -1,9 +1,0 @@
-name: <Project-Name>
-
-dependencies:
- - python>=3.10
- - pip
-
- - pip:
-   - -r requirements.txt
-   - -r requirements_test.txt
