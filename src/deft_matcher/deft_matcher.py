@@ -4,15 +4,13 @@ from deft_matcher.ambiguity_resolver import AmbiguityResolver
 from deft_matcher.decisive_matcher import DecisiveMatcher
 from deft_matcher.matcher import Matcher
 
-# TODO when I update python get rid of Optional
-
 
 class FreeTextNormaliser:
 
     decisive_matchers: list[DecisiveMatcher]
     next_index: int
-    next_matcher: Optional[Matcher]
-    next_resolver: Optional[AmbiguityResolver]
+    next_matcher: Matcher | None
+    next_resolver: AmbiguityResolver | None
     matched: dict[str, str]
     unmatched: set[str]
 
