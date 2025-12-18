@@ -4,7 +4,6 @@ from deft_matcher.ambiguity_resolver import AmbiguityResolver
 
 
 class ChooseFirst(AmbiguityResolver):
-
     @property
     def name(self) -> str:
         return "ChooseFirst"

@@ -26,7 +26,6 @@ def conditions():
 
 
 def test_free_text_normaliser_conditions_col(conditions, hpo):
-
     exact_matcher = ExactMatcher(ontology=hpo)
     synonym_matcher = SynonymMatcher(ontology=hpo)
     choose_first = ChooseFirst()

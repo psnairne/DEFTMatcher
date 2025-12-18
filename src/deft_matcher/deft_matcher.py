@@ -6,7 +6,6 @@ from deft_matcher.matcher import Matcher
 
 
 class FreeTextNormaliser:
-
     decisive_matchers: list[DecisiveMatcher]
     next_index: int
     next_matcher: Matcher | None
@@ -47,7 +46,6 @@ class FreeTextNormaliser:
         print("There are no more matchers or resolvers!")
 
     def next(self):
-
         if self.no_more_matchers_or_resolvers():
             self.no_more_matchers_or_resolvers_alert()
             return
@@ -62,7 +60,6 @@ class FreeTextNormaliser:
         solved_free_texts: list[str] = []
 
         for free_text in self.unmatched:
-
             possible_matches = matcher.get_matches(free_text)
             possible_resolution = resolver.resolve(possible_matches)
 
@@ -89,7 +86,6 @@ class FreeTextNormaliser:
             )
 
     def print_helpful_info_on_matching(self, solved_free_texts: list[str]):
-
         # TODO this can be improved so that the amount we show is adjustable. And you probably want helpful infos split between more lines.
 
         # PRINT INFO ON WHAT HAS BEEN MATCHED

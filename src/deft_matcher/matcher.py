@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 
 
 class Matcher(ABC):
-
     @property
     @abstractmethod
     def name(self) -> str:

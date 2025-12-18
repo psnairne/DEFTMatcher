@@ -3,7 +3,6 @@ from typing import Optional
 
 
 class AmbiguityResolver(ABC):
-
     @property
     @abstractmethod
     def name(self) -> str:

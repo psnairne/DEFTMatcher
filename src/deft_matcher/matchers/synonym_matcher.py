@@ -40,7 +40,6 @@ class SynonymMatcher(Matcher):
         syn_to_ids = {}
 
         for term in self._ontology.terms:
-
             if term.synonyms is None:
                 continue
 

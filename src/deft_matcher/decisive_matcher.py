@@ -3,7 +3,6 @@ from deft_matcher.matcher import Matcher
 
 
 class DecisiveMatcher:
-
     matcher: Matcher
     ambiguity_resolver: AmbiguityResolver
 
