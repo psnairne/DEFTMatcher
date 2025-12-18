@@ -64,8 +64,6 @@ extend-select = [
     "PERF102", # When using only the {subset} of a dict use the {subset}() method
 
     #TODOs
-    "TD002", # Missing author in TODO; try: # TODO(<author_name>): ... or # TODO @<author_name>: ...
-    "TD005", # Missing issue description after TODO
     "TD006", # Invalid TODO capitalization: {tag} should be TODO
     # Typehints
     "TC010", # Invalid string member in X | Y-style union type
@@ -73,11 +71,6 @@ extend-select = [
     #Collections
     "PERF101", # Do not cast an iterable to list before iterating over it
     "PERF402", # Use list or list.copy to create a copy of a list
-
-    # Documentation checks
-    "D101", # Missing docstring in public class
-    "D102", # Missing docstring in public method
-    "D103", # Missing docstring in public function
 
     # Imports
     "F402", # Import {name} from {row} shadowed by loop variable
@@ -89,10 +82,6 @@ extend-select = [
     # Mutable Defaults
     "RUF012", # Mutable class attributes should be annotated with typing.ClassVar
     "B006", # Do not use mutable data structures for argument defaults
-
-    # Prints
-    "T201", # print found
-    "T203" # pprint found
 ]
 ignore = []
 
