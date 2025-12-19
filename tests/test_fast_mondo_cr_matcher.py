@@ -7,7 +7,6 @@ from deft_matcher.matchers.fast_mondo_cr_matcher import FastMONDOCRMatcher
 
 @pytest.mark.skipif(os.getenv("CI") == "true", reason="Skipped in CI")
 def test_fast_mondo_cr_matcher():
-
     # NOTE: if you don't already have MONDO indexed, this will take about 20 mins
 
     fast_mondo_cr_matcher = FastMONDOCRMatcher(

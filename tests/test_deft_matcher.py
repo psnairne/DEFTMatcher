@@ -70,17 +70,13 @@ def mondo_syn_matcher(mondo):
 
 @pytest.fixture
 def fast_hpo_cr_matcher(hpo_obo_path, data_output_dir):
-    return FastHPOCRMatcher(
-        hpo_obo_path=hpo_obo_path,
-        data_output_dir=data_output_dir,
-    )
+    return FastHPOCRMatcher(hpo_obo_path=hpo_obo_path, data_output_dir=data_output_dir)
 
 
 @pytest.fixture
 def fast_mondo_cr_matcher(mondo_obo_path, data_output_dir):
     return FastMONDOCRMatcher(
-        mondo_obo_path=mondo_obo_path,
-        data_output_dir=data_output_dir,
+        mondo_obo_path=mondo_obo_path, data_output_dir=data_output_dir
     )
 
 
@@ -110,7 +106,6 @@ def test_deft_matcher_conditions_col(
     fast_mondo_cr_matcher,
     choose_first,
 ):
-
     hpo_exact_dm = DecisiveMatcher(
         matcher=hpo_exact_matcher, ambiguity_resolver=choose_first
     )
