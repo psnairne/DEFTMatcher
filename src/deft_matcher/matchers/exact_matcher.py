@@ -1,6 +1,7 @@
 from hpotk import Ontology
 
 from deft_matcher.matcher import Matcher
+from deft_matcher.utils import get_ontology_prefix
 
 
 class ExactMatcher(Matcher):
@@ -23,7 +24,7 @@ class ExactMatcher(Matcher):
 
     @property
     def name(self) -> str:
-        return "ExactMatcher"
+        return f"ExactMatcher({get_ontology_prefix(self._ontology)})"
 
     def get_matches(self, free_text: str) -> list[str]:
         possible_match = self._label_to_id.get(free_text.lower())
