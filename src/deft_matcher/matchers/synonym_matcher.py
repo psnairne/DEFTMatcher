@@ -1,6 +1,7 @@
 from hpotk import Ontology, SynonymCategory, SynonymType
 
 from deft_matcher.matcher import Matcher
+from deft_matcher.utils import get_ontology_prefix
 
 
 class SynonymMatcher(Matcher):
@@ -55,13 +56,14 @@ class SynonymMatcher(Matcher):
 
     @staticmethod
     def _get_allowed_synonym_categories(
-        provided_synonym_categories: list[SynonymCategory] | None,
+        provided_synonym_categories: list[SynonymCategory | None] | None,
     ) -> list[SynonymCategory]:
         all_synonym_categories = [
             SynonymCategory.BROAD,
             SynonymCategory.NARROW,
             SynonymCategory.RELATED,
             SynonymCategory.EXACT,
+            None,
         ]
         return (
             all_synonym_categories
@@ -71,7 +73,7 @@ class SynonymMatcher(Matcher):
 
     @staticmethod
     def _get_allowed_synonym_types(
-        provided_synonym_types: list[SynonymType] | None,
+        provided_synonym_types: list[SynonymType | None] | None,
     ) -> list[SynonymType]:
         all_synonym_types = [
             SynonymType.OBSOLETE_SYNONYM,
@@ -80,6 +82,7 @@ class SynonymMatcher(Matcher):
             SynonymType.ALLELIC_REQUIREMENT,
             SynonymType.PLURAL_FORM,
             SynonymType.UK_SPELLING,
+            None,
         ]
         return (
             all_synonym_types
@@ -89,7 +92,7 @@ class SynonymMatcher(Matcher):
 
     @property
     def name(self) -> str:
-        return "SynonymMatcher"
+        return f"SynonymMatcher({get_ontology_prefix(self._ontology)})"
 
     def get_matches(self, free_text: str) -> list[str]:
         possible_matches = self._syn_to_ids.get(free_text.lower())

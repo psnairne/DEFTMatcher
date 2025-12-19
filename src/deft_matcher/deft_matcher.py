@@ -44,6 +44,14 @@ class DeftMatcher:
 
         self.logger.info(self.startup_log_str())
 
+    def run(self):
+        """
+        Applies all DecisiveMatchers in order.
+        """
+
+        for dm_no in range(len(self.decisive_matchers)):
+            self.next()
+
     def next(self):
         """
         Applies the next DecisiveMatcher to the remaining unmatched strings.
@@ -71,6 +79,9 @@ class DeftMatcher:
             if resolution is not None:
                 self.matched[free_text] = resolution
                 solved.append(free_text)
+            #     self.logger.info(f"{free_text} was matched to {resolution}!")
+            # else:
+            #     self.logger.info(f"{free_text} had no resolution.")
 
         self.unmatched -= set(solved)
         self.next_index += 1

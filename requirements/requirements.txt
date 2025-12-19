@@ -1,3 +1,5 @@
 certifi==2025.11.12
 hpo-toolkit==0.7.0
 numpy==2.3.5
+fasthpocr==0.1.4
+pronto==2.7.2
