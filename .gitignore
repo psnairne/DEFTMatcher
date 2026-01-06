@@ -197,3 +197,4 @@ cython_debug/
 .idea/
 
 _version.py
+/src/deft_matcher/matchers/rag_hpo_matcher/data/

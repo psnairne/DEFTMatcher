@@ -1,5 +1,7 @@
 import random
 
+from tqdm import tqdm
+
 from deft_matcher.ambiguity_resolver import AmbiguityResolver
 from deft_matcher.decisive_matcher import DecisiveMatcher
 from deft_matcher.matcher import Matcher
@@ -79,9 +81,9 @@ class DeftMatcher:
             if resolution is not None:
                 self.matched[free_text] = resolution
                 solved.append(free_text)
-            #     self.logger.info(f"{free_text} was matched to {resolution}!")
-            # else:
-            #     self.logger.info(f"{free_text} had no resolution.")
+                self.logger.info(f"{free_text} was matched to {resolution}!")
+            else:
+                self.logger.info(f"{free_text} had no resolution.")
 
         self.unmatched -= set(solved)
         self.next_index += 1
