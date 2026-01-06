@@ -10,7 +10,7 @@ class OllamaClient:
 
         self.model_name = model_name
 
-    def query(self, user_input: str, system_message: str) -> str:
+    def query(self, system_message: str, user_input: str) -> str:
         resp: ChatResponse = chat(
             model=self.model_name,
             messages=[
