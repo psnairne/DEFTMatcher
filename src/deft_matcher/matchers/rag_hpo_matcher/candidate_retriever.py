@@ -41,7 +41,7 @@ class HpoCandidateRetriever:
         """
         Allows searches on the HPO embedding matrix.
         """
-        emb_matrix: NDArray[np.float32] = np.load(self.embedded_hpo_path)["emb"].astype(
+        emb_matrix: ndarray[np.float32] = np.load(self.embedded_hpo_path)["emb"].astype(
             np.float32
         )
         dim: int = emb_matrix.shape[1]
@@ -86,17 +86,18 @@ class HpoCandidateRetriever:
         tokens2: Set[str] = set(re.findall(r"\w+", phrase2.lower()))
         return bool(tokens1 & tokens2)
 
-    def get_hybrid_candidates(
+    def get_candidates(
         self,
         phrase: str,
         amount_to_search: int,
         min_candidates: int,
         max_candidates: int,
         similarity_threshold: float,
+        hybrid_search: bool,
     ) -> List[Dict[str, str]]:
         """
-        Does a "hybrid" search for best candidates.
-        Namely, it takes it account token overlap as well as the similarity score.
+        Gets the best candidates based on cosine similarity score.
+        If hybrid_search = True, then it also takes into account token overlap.
         """
 
         similarities: ndarray[float]
@@ -117,12 +118,21 @@ class HpoCandidateRetriever:
             if hpo_id in seen_hpo_ids:
                 continue
 
-            # accept if token overlap, or above similarity threshold, or to reach min_candidates
-            if (
-                self._token_overlap(phrase, syn_or_label)
-                or similarity_score >= similarity_threshold
-                or len(candidates) < min_candidates
-            ):
+            accept_candidate: bool
+
+            if hybrid_search:
+                accept_candidate = (
+                    similarity_score >= similarity_threshold
+                    or len(candidates) < min_candidates
+                    or self._token_overlap(phrase, syn_or_label)
+                )
+            else:
+                accept_candidate = (
+                    similarity_score >= similarity_threshold
+                    or len(candidates) < min_candidates
+                )
+
+            if accept_candidate:
                 seen_hpo_ids.add(hpo_id)
                 candidates.append(
                     {

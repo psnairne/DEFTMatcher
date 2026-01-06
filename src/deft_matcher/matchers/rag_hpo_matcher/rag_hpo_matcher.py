@@ -54,14 +54,13 @@ class RagHpoMatcher(Matcher):
         ) as f:
             system_message: str = f.read()
 
-        candidates: List[Dict[str, str]] = (
-            self._hpo_candidate_retriever.get_hybrid_candidates(
-                phrase=free_text,
-                amount_to_search=500,
-                min_candidates=15,
-                max_candidates=20,
-                similarity_threshold=0.35,
-            )
+        candidates: List[Dict[str, str]] = self._hpo_candidate_retriever.get_candidates(
+            phrase=free_text,
+            amount_to_search=500,
+            min_candidates=15,
+            max_candidates=20,
+            similarity_threshold=0.35,
+            hybrid_search=True,
         )
 
         user_input: str = json.dumps({"phrase": free_text, "candidates": candidates})
