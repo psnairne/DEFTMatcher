@@ -3,3 +3,6 @@ hpo-toolkit==0.7.0
 numpy==2.3.5
 fasthpocr==0.1.4
 pronto==2.7.2
+ollama==0.6.1
+sentence-transformers==5.2.0
+faiss-cpu==1.13.2
