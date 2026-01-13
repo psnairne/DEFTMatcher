@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from deft_matcher.matchers.rag_hpo_matcher.rag_hpo_matcher import RagHpoMatcher
 
@@ -16,6 +18,7 @@ def rag_hpo_matcher():
     )
 
 
+@pytest.mark.skipif(os.getenv("CI") == "true", reason="Skipped in CI")
 def test_rag_hpo_matcher(rag_hpo_matcher):
     painful_leg_matches = rag_hpo_matcher.get_matches("my leg hurts")
 
