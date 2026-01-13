@@ -104,7 +104,9 @@ class HpoCandidateRetriever:
         indices: ndarray[int]
 
         query_vec: np.ndarray[np.float32] = self.embed_phrase(phrase)
-        (similarities,), (indices,) = self._faiss_index.search(query_vec, amount_to_search)  # type: ignore[arg-type]
+        (similarities,), (indices,) = self._faiss_index.search(
+            query_vec, amount_to_search
+        )  # type: ignore[arg-type]
 
         seen_hpo_ids: Set[str] = set()
         candidates: List[Dict[str, str | float]] = []

@@ -3,11 +3,9 @@ from ollama import chat, ChatResponse
 
 
 class OllamaClient:
-
     model_name: str
 
     def __init__(self, model_name: str):
-
         self.model_name = model_name
 
     def query(self, system_message: str, user_input: str) -> str:

@@ -1,7 +1,4 @@
 import random
-
-from tqdm import tqdm
-
 from deft_matcher.ambiguity_resolver import AmbiguityResolver
 from deft_matcher.decisive_matcher import DecisiveMatcher
 from deft_matcher.matcher import Matcher

@@ -17,14 +17,6 @@ class RagHpoMatcher(Matcher):
     The vectorised HPO is found in hpo_embedded.npz.
     """
 
-    model_name: str
-    _client: OllamaClient
-    embedded_hpo_path: str
-    embedding_metadata_path: str
-    embedding_model_path: str
-    _client: OllamaClient
-    _hpo_candidate_retriever: HpoCandidateRetriever
-
     def __init__(
         self,
         model_name: str,
@@ -46,7 +38,6 @@ class RagHpoMatcher(Matcher):
         return f"RagHpoMatcher({self.model_name})"
 
     def get_matches(self, free_text: str) -> list[str]:
-
         with open(
             "/Users/patrick/DEFTMatcher/src/deft_matcher/matchers/rag_hpo_matcher/system_message.txt",
             "r",
@@ -62,6 +53,8 @@ class RagHpoMatcher(Matcher):
             similarity_threshold=0.35,
             hybrid_search=True,
         )
+
+        print(candidates)
 
         user_input: str = json.dumps({"phrase": free_text, "candidates": candidates})
 

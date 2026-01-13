@@ -84,10 +84,8 @@ def fast_mondo_cr_matcher(mondo_obo_path, data_output_dir):
 @pytest.fixture
 def rag_hpo_matcher():
     model_name = "llama3.2"
-    embedded_hpo_path = "/deft_matcher/matchers/rag_hpo_matcher/data/hpo_embedded.npz"
-    embedding_metadata_path = (
-        "/deft_matcher/matchers/rag_hpo_matcher/data/hpo_meta.json"
-    )
+    embedded_hpo_path = "/Users/patrick/DEFTMatcher/src/deft_matcher/matchers/rag_hpo_matcher/data/hpo_embedded.npz"
+    embedding_metadata_path = "/Users/patrick/DEFTMatcher/src/deft_matcher/matchers/rag_hpo_matcher/data/hpo_meta.json"
     embedding_model_path = "/Users/patrick/DEFTMatcher/src/deft_matcher/matchers/rag_hpo_matcher/sbert_model"
     return RagHpoMatcher(
         model_name=model_name,
