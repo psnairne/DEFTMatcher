@@ -11,6 +11,7 @@ from deft_matcher.deft_matcher import DeftMatcher
 from deft_matcher.matchers.exact_matcher import ExactMatcher
 from deft_matcher.matchers.fast_hpo_cr_matcher import FastHPOCRMatcher
 from deft_matcher.matchers.fast_mondo_cr_matcher import FastMONDOCRMatcher
+from deft_matcher.matchers.rag_hpo_matcher.rag_hpo_matcher import RagHpoMatcher
 from deft_matcher.matchers.synonym_matcher import SynonymMatcher
 
 
@@ -81,6 +82,20 @@ def fast_mondo_cr_matcher(mondo_obo_path, data_output_dir):
 
 
 @pytest.fixture
+def rag_hpo_matcher():
+    model_name = "llama3.2"
+    embedded_hpo_path = "/Users/patrick/DEFTMatcher/src/deft_matcher/matchers/rag_hpo_matcher/data/hpo_embedded.npz"
+    embedding_metadata_path = "/Users/patrick/DEFTMatcher/src/deft_matcher/matchers/rag_hpo_matcher/data/hpo_meta.json"
+    embedding_model_path = "/Users/patrick/DEFTMatcher/src/deft_matcher/matchers/rag_hpo_matcher/sbert_model"
+    return RagHpoMatcher(
+        model_name=model_name,
+        embedded_hpo_path=embedded_hpo_path,
+        embedding_metadata_path=embedding_metadata_path,
+        embedding_model_path=embedding_model_path,
+    )
+
+
+@pytest.fixture
 def choose_first():
     return ChooseFirstResolver()
 
@@ -104,6 +119,7 @@ def test_deft_matcher_conditions_col(
     mondo_syn_matcher,
     fast_hpo_cr_matcher,
     fast_mondo_cr_matcher,
+    rag_hpo_matcher,
     choose_first,
 ):
     hpo_exact_dm = DecisiveMatcher(
@@ -128,6 +144,10 @@ def test_deft_matcher_conditions_col(
         matcher=fast_mondo_cr_matcher, ambiguity_resolver=choose_first
     )
 
+    rag_hpo_matcher_dm = DecisiveMatcher(
+        matcher=rag_hpo_matcher, ambiguity_resolver=choose_first
+    )
+
     conditions_normaliser = DeftMatcher(
         decisive_matchers=[
             hpo_exact_dm,
@@ -136,6 +156,7 @@ def test_deft_matcher_conditions_col(
             mondo_exact_dm,
             mondo_syn_dm,
             fast_mondo_cr_dm,
+            rag_hpo_matcher_dm,
         ],
         free_texts=conditions,
         data_name="IDATA",
