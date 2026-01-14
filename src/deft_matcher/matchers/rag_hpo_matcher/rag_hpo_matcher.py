@@ -23,6 +23,11 @@ class RagHpoMatcher(Matcher):
         embedded_hpo_path: str,
         embedding_metadata_path: str,
         embedding_model_path: str,
+        amount_to_search: int = 500,
+        min_candidates: int = 15,
+        max_candidates: int = 20,
+        similarity_threshold: float = 0.35,
+        hybrid_search: bool = True,
     ) -> None:
         self.model_name = model_name
         self.embedded_hpo_path = embedded_hpo_path
@@ -32,6 +37,12 @@ class RagHpoMatcher(Matcher):
         self._hpo_candidate_retriever = HpoCandidateRetriever(
             embedded_hpo_path, embedding_metadata_path, embedding_model_path
         )
+        # parameters for candidate retrieval
+        self.amount_to_search = amount_to_search
+        self.min_candidates = min_candidates
+        self.max_candidates = max_candidates
+        self.similarity_threshold = similarity_threshold
+        self.hybrid_search = hybrid_search
 
     @property
     def name(self) -> str:
@@ -47,14 +58,12 @@ class RagHpoMatcher(Matcher):
 
         candidates: List[Dict[str, str]] = self._hpo_candidate_retriever.get_candidates(
             phrase=free_text,
-            amount_to_search=500,
-            min_candidates=15,
-            max_candidates=20,
-            similarity_threshold=0.35,
-            hybrid_search=True,
+            amount_to_search=self.amount_to_search,
+            min_candidates=self.min_candidates,
+            max_candidates=self.max_candidates,
+            similarity_threshold=self.similarity_threshold,
+            hybrid_search=self.hybrid_search,
         )
-
-        print(candidates)
 
         user_input: str = json.dumps({"phrase": free_text, "candidates": candidates})
 
