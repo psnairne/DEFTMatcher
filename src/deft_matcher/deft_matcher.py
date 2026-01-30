@@ -15,7 +15,7 @@ class DeftMatcher:
 
     Just provide your free texts, and your ordered list of DecisiveMatchers.
 
-    The .next() function is your friend.
+    The .next() and the .run() functions are your friends.
     """
 
     decisive_matchers: list[DecisiveMatcher]
@@ -30,7 +30,7 @@ class DeftMatcher:
     def __init__(
         self,
         decisive_matchers: list[DecisiveMatcher],
-        free_texts: set[str],
+        free_texts: list[str],
         data_name: str,
     ) -> None:
         self.decisive_matchers = decisive_matchers
@@ -38,7 +38,7 @@ class DeftMatcher:
         self.next_matcher = self.get_next_matcher_from_next_index()
         self.next_resolver = self.get_next_resolver_from_next_index()
         self.matched = {}
-        self.unmatched = free_texts
+        self.unmatched = set(free_texts)
         self.logger = self.initialise_logger()
         self.data_name = data_name
 
