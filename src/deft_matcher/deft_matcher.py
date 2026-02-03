@@ -7,6 +7,8 @@ from datetime import datetime
 import logging
 from logging import Logger
 
+from deft_matcher.ontology_class import OntologyClass
+
 
 class DeftMatcher:
     """
@@ -21,7 +23,7 @@ class DeftMatcher:
     next_index: int
     next_matcher: Matcher | None
     next_resolver: AmbiguityResolver | None
-    matched: dict[str, str]
+    matched: dict[str, OntologyClass]
     unmatched: set[str]
     logger: Logger
     data_name: str

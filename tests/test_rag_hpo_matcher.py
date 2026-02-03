@@ -2,6 +2,7 @@ import os
 
 import pytest
 from deft_matcher.matchers.rag_hpo_matcher.rag_hpo_matcher import RagHpoMatcher
+from deft_matcher.ontology_class import OntologyClass
 
 
 @pytest.fixture
@@ -23,4 +24,4 @@ def test_rag_hpo_matcher(rag_hpo_matcher):
     painful_leg_matches = rag_hpo_matcher.get_matches("my leg hurts")
 
     assert len(painful_leg_matches) == 1
-    assert painful_leg_matches[0] == "HP:0012514"
+    assert painful_leg_matches[0] == OntologyClass("HP:0012514", "Lower limb pain")

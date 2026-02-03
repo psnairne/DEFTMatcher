@@ -3,6 +3,7 @@ import os
 import pytest
 
 from deft_matcher.matchers.fast_mondo_cr_matcher import FastMONDOCRMatcher
+from deft_matcher.ontology_class import OntologyClass
 
 
 @pytest.mark.skipif(os.getenv("CI") == "true", reason="Skipped in CI")
@@ -17,6 +18,6 @@ def test_fast_mondo_cr_matcher():
     assert fast_mondo_cr_matcher.get_matches(
         "cystic fibrosis and other conditions"
     ) == [
-        "MONDO:0009061",  # cystic fibrosis
-        "MONDO:0000001",  # disease
+        OntologyClass("MONDO:0009061", "cystic fibrosis"),  # Asthma
+        OntologyClass("MONDO:0000001", "disease"),  # Short stature
     ]
