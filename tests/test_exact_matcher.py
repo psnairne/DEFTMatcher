@@ -3,6 +3,7 @@ import pytest
 from hpotk import OntologyType
 
 from deft_matcher.matchers.exact_matcher import ExactMatcher
+from deft_matcher.ontology_class import OntologyClass
 
 
 @pytest.fixture
@@ -27,7 +28,7 @@ def test_exact_matcher_hpo_success(exact_matcher_hpo):
     asthma_matches = exact_matcher_hpo.get_matches("Asthma")
 
     assert len(asthma_matches) == 1
-    assert asthma_matches[0] == "HP:0002099"
+    assert asthma_matches[0] == OntologyClass("HP:0002099", "Asthma")
 
 
 def test_exact_matcher_hpo_fail(exact_matcher_hpo):
@@ -40,7 +41,7 @@ def test_exact_matcher_mondo_success(exact_matcher_mondo):
     marfan_matches = exact_matcher_mondo.get_matches("marfan synDROME")
 
     assert len(marfan_matches) == 1
-    assert marfan_matches[0] == "MONDO:0007947"
+    assert marfan_matches[0] == OntologyClass("MONDO:0007947", "Marfan syndrome")
 
 
 def test_exact_matcher_mondo_fail(exact_matcher_mondo):

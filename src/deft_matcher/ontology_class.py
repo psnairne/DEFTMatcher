@@ -1,3 +1,7 @@
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
 class OntologyClass:
     """
     A label and an ID.
@@ -7,10 +11,8 @@ class OntologyClass:
     curie_id: str
     label: str
 
-    def __init__(
-        self,
-        curie_id: str,
-        label: str,
-    ) -> None:
-        self.curie_id = curie_id
-        self.label = label
+
+# Then update tests
+# Then implement vector similarity search for HPO and MONDO
+# Then do proper CSV and logging output
+# Then do HumanMatcher

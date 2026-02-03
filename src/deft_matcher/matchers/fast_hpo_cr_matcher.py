@@ -55,7 +55,7 @@ class FastHPOCRMatcher(Matcher):
         return HPOAnnotator(self._hpo_index_path)
 
     @staticmethod
-    def _initialise_hpo():
+    def _initialise_hpo() -> Ontology:
         store = hpotk.configure_ontology_store()
         return store.load_hpo(release="v2025-11-24")
 

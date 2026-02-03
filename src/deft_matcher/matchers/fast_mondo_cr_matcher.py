@@ -57,7 +57,7 @@ class FastMONDOCRMatcher(Matcher):
         return HPOAnnotator(self._mondo_index_path)
 
     @staticmethod
-    def _initialise_mondo():
+    def _initialise_mondo() -> Ontology:
         store = hpotk.configure_ontology_store()
         mondo = store.load_ontology(
             ontology_type=OntologyType.MONDO,
