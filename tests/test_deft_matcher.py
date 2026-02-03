@@ -12,6 +12,9 @@ from deft_matcher.matchers.exact_matcher import ExactMatcher
 from deft_matcher.matchers.fast_hpo_cr_matcher import FastHPOCRMatcher
 from deft_matcher.matchers.fast_mondo_cr_matcher import FastMONDOCRMatcher
 from deft_matcher.matchers.rag_hpo_matcher.rag_hpo_matcher import RagHpoMatcher
+from deft_matcher.matchers.rag_hpo_matcher.vector_similarity_matcher import (
+    HpoVectorSimilarityMatcher,
+)
 from deft_matcher.matchers.synonym_matcher import SynonymMatcher
 
 
@@ -96,6 +99,19 @@ def rag_hpo_matcher() -> RagHpoMatcher:
 
 
 @pytest.fixture
+def vector_similarity_matcher():
+    embedded_hpo_path = "/Users/patrick/DEFTMatcher/src/deft_matcher/matchers/rag_hpo_matcher/data/hpo_embedded.npz"
+    embedding_metadata_path = "/Users/patrick/DEFTMatcher/src/deft_matcher/matchers/rag_hpo_matcher/data/hpo_meta.json"
+    embedding_model_path = "/Users/patrick/DEFTMatcher/src/deft_matcher/matchers/rag_hpo_matcher/sbert_model"
+    return HpoVectorSimilarityMatcher(
+        embedded_hpo_path=embedded_hpo_path,
+        embedding_metadata_path=embedding_metadata_path,
+        embedding_model_path=embedding_model_path,
+        similarity_threshold=0.75,
+    )
+
+
+@pytest.fixture
 def choose_first() -> ChooseFirstResolver:
     return ChooseFirstResolver()
 
@@ -119,6 +135,7 @@ def test_deft_matcher_conditions_col(
     mondo_syn_matcher,
     fast_hpo_cr_matcher,
     fast_mondo_cr_matcher,
+    vector_similarity_matcher,
     rag_hpo_matcher,
     choose_first,
 ):
@@ -144,6 +161,10 @@ def test_deft_matcher_conditions_col(
         matcher=fast_mondo_cr_matcher, ambiguity_resolver=choose_first
     )
 
+    vector_similarity_matcher_dm = DecisiveMatcher(
+        matcher=vector_similarity_matcher, ambiguity_resolver=choose_first
+    )
+
     rag_hpo_matcher_dm = DecisiveMatcher(
         matcher=rag_hpo_matcher, ambiguity_resolver=choose_first
     )
@@ -156,7 +177,7 @@ def test_deft_matcher_conditions_col(
             mondo_exact_dm,
             mondo_syn_dm,
             fast_mondo_cr_dm,
-            rag_hpo_matcher_dm,
+            vector_similarity_matcher_dm,
         ],
         free_texts=conditions,
         data_name="IDATA",

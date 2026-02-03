@@ -117,6 +117,9 @@ class HpoCandidateRetriever:
             hpo_id: str = metadata.get("hp_id")
             syn_or_label: str = metadata.get("info")
 
+            if syn_or_label.startswith("obsolete"):
+                continue
+
             if hpo_id in seen_hpo_ids:
                 continue
 
@@ -148,3 +151,35 @@ class HpoCandidateRetriever:
                 break
 
         return candidates
+
+    def get_most_similar(
+        self, phrase: str, amount_to_search: int, similarity_threshold: float
+    ) -> str | None:
+        """
+        Retrieves the best candidates based on cosine similarity score.
+        If no candidate passes the similarity threshold, then None is returned.
+        """
+
+        similarities: ndarray[float]
+        indices: ndarray[int]
+
+        query_vec: np.ndarray[np.float32] = self.embed_phrase(phrase)
+        (similarities,), (indices,) = self._faiss_index.search(
+            query_vec, amount_to_search
+        )  # type: ignore[arg-type]
+
+        for similarity_score, idx in sorted(
+            zip(similarities, indices), key=lambda x: x[0], reverse=True
+        ):
+            metadata: dict[str, str] = self._embedding_metadata[idx]
+            hpo_id: str = metadata.get("hp_id")
+            syn_or_label: str = metadata.get("info")
+
+            if syn_or_label.startswith("obsolete"):
+                continue
+            elif similarity_score < similarity_threshold:
+                break
+            else:
+                return hpo_id
+
+        return None
