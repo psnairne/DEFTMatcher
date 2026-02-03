@@ -29,6 +29,20 @@ class MatchData:
 
 
 @dataclass(frozen=True)
+class MetaDataStatistics:
+    """
+    Holds serialisable statistics on the results of a DeftMatcher pipeline.
+    """
+
+    number_of_free_texts: int
+    number_of_unique_free_texts: int
+    number_of_free_texts_matched: int
+    number_of_unique_free_texts_matched: int
+    number_of_free_texts_unmatched: int
+    number_of_unique_free_texts_unmatched: int
+
+
+@dataclass(frozen=True)
 class MetaData:
     """
     Holds serialisable info on the set-up and results of a DeftMatcher pipeline.
@@ -36,12 +50,9 @@ class MetaData:
 
     time_created: str
     decisive_matchers: list[tuple[str, str]]
-    number_of_free_texts: int
-    number_of_unique_free_texts: int
-    number_of_free_texts_matched: int
-    number_of_unique_free_texts_matched: int
-    number_of_free_texts_unmatched: int
-    number_of_unique_free_texts_unmatched: int
+    matching_uuid: str
+    statistics: MetaDataStatistics
+    unique_unmatched_texts: list[str]
 
 
 class DeftMatcher:
@@ -158,13 +169,15 @@ class DeftMatcher:
     # ---------------- OUTPUTTING RESULTS ----------------
 
     def output_results(self, output_dir: Path):
-        results_dir = output_dir / f"deft_matcher_results_{uuid4()}"
+        matching_uuid: str = str(uuid4())
+
+        results_dir = output_dir / f"deft_matcher_results_{matching_uuid}"
         results_dir.mkdir(parents=True, exist_ok=False)
 
         self.logger.info(f"Outputting DEFTMatcher results to folder {results_dir}.")
 
         results_df = self.create_results_df()
-        metadata = self.create_metadata()
+        metadata = self.create_metadata(matching_uuid)
 
         matchings_path = results_dir / "matchings.csv"
         metadata_path = results_dir / "metadata.json"
@@ -193,16 +206,12 @@ class DeftMatcher:
         )
         return df
 
-    def create_metadata(self) -> MetaData:
+    def create_metadata(self, matching_uuid: str) -> MetaData:
         decisive_matchers_applied: list[DecisiveMatcher] = self.decisive_matchers[
             0 : self.next_index
         ]
-        metadata = MetaData(
-            time_created=datetime.now().isoformat(),
-            decisive_matchers=[
-                (dm.matcher.name, dm.ambiguity_resolver.name)
-                for dm in decisive_matchers_applied
-            ],
+
+        statistics = MetaDataStatistics(
             number_of_free_texts=len(self.free_texts),
             number_of_unique_free_texts=len(set(self.free_texts)),
             number_of_free_texts_matched=sum(
@@ -214,6 +223,18 @@ class DeftMatcher:
             ),
             number_of_unique_free_texts_unmatched=len(self.unmatched),
         )
+
+        metadata = MetaData(
+            time_created=datetime.now().isoformat(),
+            decisive_matchers=[
+                (dm.matcher.name, dm.ambiguity_resolver.name)
+                for dm in decisive_matchers_applied
+            ],
+            matching_uuid=matching_uuid,
+            statistics=statistics,
+            unique_unmatched_texts=list(self.unmatched),
+        )
+
         return metadata
 
     # ---------------- LOGGING METHODS ----------------
