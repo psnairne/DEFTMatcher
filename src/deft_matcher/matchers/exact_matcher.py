@@ -1,7 +1,8 @@
 from hpotk import Ontology
 
 from deft_matcher.matcher import Matcher
-from deft_matcher.utils import get_ontology_prefix
+from deft_matcher.ontology_class import OntologyClass
+from deft_matcher.utils import get_ontology_prefix, get_oc
 
 
 class ExactMatcher(Matcher):
@@ -11,21 +12,19 @@ class ExactMatcher(Matcher):
     """
 
     _ontology: Ontology
-    _label_to_id: dict[str, str]
+    _label_to_term: dict[str, OntologyClass]
 
     def __init__(self, ontology: Ontology) -> None:
         self._ontology = ontology
-        self._label_to_id = self._initialise_label_to_id()
+        self._label_to_term = self._initialise_label_to_term()
 
-    def _initialise_label_to_id(self) -> dict[str, str]:
-        return {
-            term.name.lower(): term.identifier.value for term in self._ontology.terms
-        }
+    def _initialise_label_to_term(self) -> dict[str, OntologyClass]:
+        return {term.name.lower(): get_oc(term) for term in self._ontology.terms}
 
     @property
     def name(self) -> str:
         return f"ExactMatcher({get_ontology_prefix(self._ontology)})"
 
-    def get_matches(self, free_text: str) -> list[str]:
-        possible_match = self._label_to_id.get(free_text.lower())
+    def get_matches(self, free_text: str) -> list[OntologyClass]:
+        possible_match = self._label_to_term.get(free_text.lower())
         return [] if possible_match is None else [possible_match]

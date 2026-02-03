@@ -3,6 +3,7 @@ import os
 import pytest
 
 from deft_matcher.matchers.fast_hpo_cr_matcher import FastHPOCRMatcher
+from deft_matcher.ontology_class import OntologyClass
 
 
 @pytest.mark.skipif(os.getenv("CI") == "true", reason="Skipped in CI")
@@ -13,6 +14,6 @@ def test_fast_hpo_cr_matcher():
     )
 
     assert fast_hpo_cr_matcher.get_matches("asthma and shortened stature") == [
-        "HP:0002099",  # Asthma
-        "HP:0004322",  # Short stature
+        OntologyClass("HP:0002099", "Asthma"),  # Asthma
+        OntologyClass("HP:0004322", "Short stature"),  # Short stature
     ]

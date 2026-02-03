@@ -198,3 +198,4 @@ cython_debug/
 
 _version.py
 /src/deft_matcher/matchers/rag_hpo_matcher/data/
+/src/deft_matcher/matchers/rag_hpo_matcher/sbert_model/

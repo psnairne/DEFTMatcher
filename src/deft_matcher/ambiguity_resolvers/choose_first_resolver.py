@@ -1,4 +1,5 @@
 from deft_matcher.ambiguity_resolver import AmbiguityResolver
+from deft_matcher.ontology_class import OntologyClass
 
 
 class ChooseFirstResolver(AmbiguityResolver):
@@ -12,5 +13,5 @@ class ChooseFirstResolver(AmbiguityResolver):
     def name(self) -> str:
         return "ChooseFirstResolver"
 
-    def resolve(self, possible_matches: list[str]) -> str | None:
+    def resolve(self, possible_matches: list[OntologyClass]) -> OntologyClass | None:
         return possible_matches[0] if possible_matches else None

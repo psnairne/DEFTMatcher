@@ -3,6 +3,7 @@ import pytest
 from hpotk import SynonymType, SynonymCategory, OntologyType
 
 from deft_matcher.matchers.synonym_matcher import SynonymMatcher
+from deft_matcher.ontology_class import OntologyClass
 
 
 @pytest.fixture
@@ -36,8 +37,8 @@ def test_synonym_matcher_hpo_success(synonym_matcher_hpo):
 
     assert len(asd_matches) == 2
     assert set(asd_matches) == {
-        "HP:0000729",  # HP:0000729 Autistic behaviour
-        "HP:0001631",  # HP:0001631 Atrial Septal Defect
+        OntologyClass("HP:0000729", "Autistic behavior"),
+        OntologyClass("HP:0001631", "Atrial septal defect"),
     }
 
 
@@ -75,8 +76,8 @@ def test_synonym_matcher_restrict_by_category_and_type(hpo):
 
     assert len(asd_matches) == 2
     assert set(asd_matches) == {
-        "HP:0000729",  # Autistic behaviour
-        "HP:0001631",  # Atrial Septal Defect
+        OntologyClass("HP:0000729", "Autistic behavior"),
+        OntologyClass("HP:0001631", "Atrial septal defect"),
     }
 
 
@@ -84,6 +85,6 @@ def test_synonym_matcher_mondo(synonym_matcher_mondo):
     mfs_matches = synonym_matcher_mondo.get_matches("MFS")
     assert len(mfs_matches) == 2
     assert set(mfs_matches) == {
-        "MONDO:0007947",  # Marfan Syndrome
-        "MONDO:0019202",  # Myxofibrosarcoma
+        OntologyClass("MONDO:0007947", "Marfan syndrome"),
+        OntologyClass("MONDO:0019202", "myxofibrosarcoma"),
     }

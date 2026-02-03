@@ -1,11 +1,16 @@
 import json
 from typing import List, Dict
 
+import hpotk
+from hpotk import Ontology
+
 from deft_matcher.matcher import Matcher
 from deft_matcher.matchers.rag_hpo_matcher.candidate_retriever import (
     HpoCandidateRetriever,
 )
 from deft_matcher.matchers.rag_hpo_matcher.ollama_client import OllamaClient
+from deft_matcher.ontology_class import OntologyClass
+from deft_matcher.utils import get_oc
 
 
 class RagHpoMatcher(Matcher):
@@ -16,6 +21,9 @@ class RagHpoMatcher(Matcher):
     These candidate HPO terms are found via a vector similarity search.
     The vectorised HPO is found in hpo_embedded.npz.
     """
+
+    _hpo: Ontology
+    _id_to_term: dict[str, OntologyClass]
 
     def __init__(
         self,
@@ -43,12 +51,22 @@ class RagHpoMatcher(Matcher):
         self.max_candidates = max_candidates
         self.similarity_threshold = similarity_threshold
         self.hybrid_search = hybrid_search
+        self._hpo = self._initialise_hpo()
+        self._id_to_term = self._initialise_id_to_term()
+
+    @staticmethod
+    def _initialise_hpo() -> Ontology:
+        store = hpotk.configure_ontology_store()
+        return store.load_hpo(release="v2025-11-24")
+
+    def _initialise_id_to_term(self) -> dict[str, OntologyClass]:
+        return {term.identifier.value: get_oc(term) for term in self._hpo.terms}
 
     @property
     def name(self) -> str:
         return f"RagHpoMatcher({self.model_name})"
 
-    def get_matches(self, free_text: str) -> list[str]:
+    def get_matches(self, free_text: str) -> list[OntologyClass]:
         with open(
             "/Users/patrick/DEFTMatcher/src/deft_matcher/matchers/rag_hpo_matcher/system_message.txt",
             "r",
@@ -67,4 +85,7 @@ class RagHpoMatcher(Matcher):
 
         user_input: str = json.dumps({"phrase": free_text, "candidates": candidates})
 
-        return [self._client.query(system_message, user_input)]
+        llm_response: str = self._client.query(system_message, user_input)
+        hpo_term: OntologyClass = self._id_to_term[llm_response]
+
+        return [hpo_term]

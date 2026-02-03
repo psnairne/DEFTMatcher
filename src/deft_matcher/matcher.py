@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from deft_matcher.ontology_class import OntologyClass
+
 
 class Matcher(ABC):
     @property
@@ -9,6 +11,6 @@ class Matcher(ABC):
         pass
 
     @abstractmethod
-    def get_matches(self, free_text: str) -> list[str]:
+    def get_matches(self, free_text: str) -> list[OntologyClass]:
         """Return matching ontology IDs for the given free text."""
         raise NotImplementedError

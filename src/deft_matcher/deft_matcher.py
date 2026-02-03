@@ -7,6 +7,8 @@ from datetime import datetime
 import logging
 from logging import Logger
 
+from deft_matcher.ontology_class import OntologyClass
+
 
 class DeftMatcher:
     """
@@ -14,14 +16,15 @@ class DeftMatcher:
 
     Just provide your free texts, and your ordered list of DecisiveMatchers.
 
-    The .next() function is your friend.
+    The .next() and the .run() functions are your friends.
     """
 
     decisive_matchers: list[DecisiveMatcher]
     next_index: int
     next_matcher: Matcher | None
     next_resolver: AmbiguityResolver | None
-    matched: dict[str, str]
+    free_texts: list[str]
+    matched: dict[str, OntologyClass]
     unmatched: set[str]
     logger: Logger
     data_name: str
@@ -29,15 +32,16 @@ class DeftMatcher:
     def __init__(
         self,
         decisive_matchers: list[DecisiveMatcher],
-        free_texts: set[str],
+        free_texts: list[str],
         data_name: str,
     ) -> None:
         self.decisive_matchers = decisive_matchers
         self.next_index = 0
         self.next_matcher = self.get_next_matcher_from_next_index()
         self.next_resolver = self.get_next_resolver_from_next_index()
+        self.free_texts = free_texts
+        self.unmatched = set(free_texts)
         self.matched = {}
-        self.unmatched = free_texts
         self.logger = self.initialise_logger()
         self.data_name = data_name
 
@@ -72,24 +76,26 @@ class DeftMatcher:
         solved: list[str] = []
 
         for free_text in unmatched:
-            matches = matcher.get_matches(free_text)
-            resolution = resolver.resolve(matches)
+            matches: list[OntologyClass] = matcher.get_matches(free_text)
+            resolution: OntologyClass | None = resolver.resolve(matches)
 
             if resolution is not None:
                 self.matched[free_text] = resolution
                 solved.append(free_text)
-                self.logger.info(f"{free_text} was matched to {resolution}!")
+                self.logger.info(f"{free_text} was matched to {resolution}.")
             else:
                 self.logger.info(f"{free_text} had no resolution.")
 
-        self.unmatched -= set(solved)
-        self.next_index += 1
-        self.next_matcher = self.get_next_matcher_from_next_index()
-        self.next_resolver = self.get_next_resolver_from_next_index()
+        self.update_attributes(solved_free_texts=solved)
 
         self.log_match_info(
             matcher_name=matcher.name, resolver_name=resolver.name, solved=solved
         )
+
+    def output_results_to_csv(self, file_path: Path):
+        # create the following CSV:
+        # FREE_TEXT,MATCH,MATCHER,RESOLVER
+        pass
 
     def get_next_matcher_from_next_index(self) -> Matcher | None:
         if self.next_index <= len(self.decisive_matchers) - 1:

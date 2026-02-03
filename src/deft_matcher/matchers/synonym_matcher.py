@@ -1,20 +1,21 @@
 from hpotk import Ontology, SynonymCategory, SynonymType
 
 from deft_matcher.matcher import Matcher
-from deft_matcher.utils import get_ontology_prefix
+from deft_matcher.ontology_class import OntologyClass
+from deft_matcher.utils import get_ontology_prefix, get_oc
 
 
 class SynonymMatcher(Matcher):
     """
     If a synonym of an ontology term matches the free text,
-    then that synonym is added to the output of get_matches.
+    then that term is added to the output of get_matches.
 
     The acceptable Synonym Categories and Types can be chosen.
     If synonym_categories or synonym_types = None, then that will be interpreted as "anything goes".
     """
 
     _ontology: Ontology
-    _syn_to_ids: dict[str, list[str]]
+    _syn_to_terms: dict[str, list[OntologyClass]]
     _allowed_synonym_categories: list[SynonymCategory]
     _allowed_synonym_types: list[SynonymType]
 
@@ -29,15 +30,15 @@ class SynonymMatcher(Matcher):
             synonym_categories
         )
         self._allowed_synonym_types = self._get_allowed_synonym_types(synonym_types)
-        self._syn_to_ids = self._initialise_syn_to_ids()
+        self._syn_to_terms = self._initialise_syn_to_terms()
 
-    def _initialise_syn_to_ids(self) -> dict[str, list[str]]:
+    def _initialise_syn_to_terms(self) -> dict[str, list[OntologyClass]]:
         """
         For each allowed synonym, returns all ontology IDs which correspond to it.
         Yes, it is possible that a synonym appears twice in an ontology.
         """
 
-        syn_to_ids = {}
+        syn_to_terms = {}
 
         for term in self._ontology.terms:
             if term.synonyms is None:
@@ -48,11 +49,9 @@ class SynonymMatcher(Matcher):
                     syn.category in self._allowed_synonym_categories
                     and syn.synonym_type in self._allowed_synonym_types
                 ):
-                    syn_to_ids.setdefault(syn.name.lower(), []).append(
-                        term.identifier.value
-                    )
+                    syn_to_terms.setdefault(syn.name.lower(), []).append(get_oc(term))
 
-        return syn_to_ids
+        return syn_to_terms
 
     @staticmethod
     def _get_allowed_synonym_categories(
@@ -94,6 +93,6 @@ class SynonymMatcher(Matcher):
     def name(self) -> str:
         return f"SynonymMatcher({get_ontology_prefix(self._ontology)})"
 
-    def get_matches(self, free_text: str) -> list[str]:
-        possible_matches = self._syn_to_ids.get(free_text.lower())
+    def get_matches(self, free_text: str) -> list[OntologyClass]:
+        possible_matches = self._syn_to_terms.get(free_text.lower())
         return [] if possible_matches is None else possible_matches
