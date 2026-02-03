@@ -1,4 +1,9 @@
 import random
+from dataclasses import dataclass
+from uuid import uuid4
+
+import pandas as pd
+
 from deft_matcher.ambiguity_resolver import AmbiguityResolver
 from deft_matcher.decisive_matcher import DecisiveMatcher
 from deft_matcher.matcher import Matcher
@@ -8,6 +13,17 @@ import logging
 from logging import Logger
 
 from deft_matcher.ontology_class import OntologyClass
+
+
+@dataclass(frozen=True)
+class MatchData:
+    """
+    Holds info on a match made by DEFTMatcher.
+    """
+
+    match: OntologyClass
+    matcher_name: str
+    resolver_name: str
 
 
 class DeftMatcher:
@@ -24,7 +40,7 @@ class DeftMatcher:
     next_matcher: Matcher | None
     next_resolver: AmbiguityResolver | None
     free_texts: list[str]
-    matched: dict[str, OntologyClass]
+    matchings: dict[str, MatchData]
     unmatched: set[str]
     logger: Logger
     data_name: str
@@ -41,7 +57,7 @@ class DeftMatcher:
         self.next_resolver = self.get_next_resolver_from_next_index()
         self.free_texts = free_texts
         self.unmatched = set(free_texts)
-        self.matched = {}
+        self.matchings = {}
         self.logger = self.initialise_logger()
         self.data_name = data_name
 
@@ -73,6 +89,10 @@ class DeftMatcher:
         self.match(unmatched=self.unmatched, matcher=matcher, resolver=resolver)
 
     def match(self, unmatched: set[str], matcher: Matcher, resolver: AmbiguityResolver):
+
+        matcher_name = matcher.name
+        resolver_name = resolver.name
+
         solved: list[str] = []
 
         for free_text in unmatched:
@@ -80,7 +100,9 @@ class DeftMatcher:
             resolution: OntologyClass | None = resolver.resolve(matches)
 
             if resolution is not None:
-                self.matched[free_text] = resolution
+                self.matchings[free_text] = MatchData(
+                    resolution, matcher_name, resolver_name
+                )
                 solved.append(free_text)
                 self.logger.info(f"{free_text} was matched to {resolution}.")
             else:
@@ -92,9 +114,37 @@ class DeftMatcher:
             matcher_name=matcher.name, resolver_name=resolver.name, solved=solved
         )
 
-    def output_results_to_csv(self, file_path: Path):
+    def output_results(self, output_dir: Path):
         # create the following CSV:
-        # FREE_TEXT,MATCH,MATCHER,RESOLVER
+        # file name should be a UID_results.scv
+        # FREE_TEXT,CURIE_ID,LABEL,MATCHER,RESOLVER
+        df = pd.DataFrame(
+            [
+                {
+                    "FREE_TEXT": free_text,
+                    "CURIE_ID": data.match.curie_id,
+                    "LABEL": data.match.label,
+                    "MATCHER": data.matcher_name,
+                    "RESOLVER": data.resolver_name,
+                }
+                for free_text, data in self.matchings.items()
+            ]
+        )
+
+        results_dir = output_dir / f"deft_matcher_results_{uuid4()}"
+        results_dir.mkdir(parents=True, exist_ok=False)
+        output_path = results_dir / "matchings.csv"
+        df.to_csv(output_path, index=False)
+
+        # file name should be a UID_metadata.json
+        # time created
+        # original input
+        # which matchers and resolvers ran
+        # original number of free texts
+        # original number of unique free texts
+        # how many of the original number of free texts were matched
+        # how many of the unique free texts were matched
+        # the unique unmatched strings
         pass
 
     def get_next_matcher_from_next_index(self) -> Matcher | None:
@@ -179,10 +229,10 @@ class DeftMatcher:
             return "No strings were matched."
         elif num_solved == 1:
             solved_text = solved[0]
-            return f"Only 1 string was matched: {self.example_match_str(solved_text, self.matched[solved_text])}."
+            return f"Only 1 string was matched: {self.example_match_str(solved_text, self.matchings[solved_text])}."
         else:
             examples = [
-                self.example_match_str(text, self.matched[text])
+                self.example_match_str(text, self.matchings[text])
                 for text in solved[:num_examples]
             ]
             examples_str = "\n".join(f"  - {ex}" for ex in examples)
