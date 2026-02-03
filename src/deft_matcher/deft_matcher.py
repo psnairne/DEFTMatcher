@@ -83,14 +83,16 @@ class DeftMatcher:
             # else:
             #     self.logger.info(f"{free_text} had no resolution.")
 
-        self.unmatched -= set(solved)
-        self.next_index += 1
-        self.next_matcher = self.get_next_matcher_from_next_index()
-        self.next_resolver = self.get_next_resolver_from_next_index()
+        self.update_attributes(solved_free_texts=solved)
 
         self.log_match_info(
             matcher_name=matcher.name, resolver_name=resolver.name, solved=solved
         )
+
+    def output_results_to_csv(self, file_path: Path):
+        # create the following CSV:
+        # FREE_TEXT,MATCH,MATCHER,RESOLVER
+        pass
 
     def get_next_matcher_from_next_index(self) -> Matcher | None:
         if self.next_index <= len(self.decisive_matchers) - 1:

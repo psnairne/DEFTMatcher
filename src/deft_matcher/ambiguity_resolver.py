@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from deft_matcher.ontology_class import OntologyClass
+
 
 class AmbiguityResolver(ABC):
     """
@@ -14,6 +16,6 @@ class AmbiguityResolver(ABC):
         pass
 
     @abstractmethod
-    def resolve(self, possible_matches: list[str]) -> str | None:
+    def resolve(self, possible_matches: list[OntologyClass]) -> str | None:
         """Given a list of possible matches for some free text, this function should choose exactly one of them."""
         raise NotImplementedError

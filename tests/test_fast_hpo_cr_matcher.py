@@ -12,7 +12,9 @@ def test_fast_hpo_cr_matcher():
         data_output_dir="/Users/patrick/DEFTMatcher/tests/data",
     )
 
-    assert fast_hpo_cr_matcher.get_matches("asthma and shortened stature") == [
+    assert fast_hpo_cr_matcher.get_matches(
+        "autism and asthma and pneumonia and thought blocking and Abnormal finger phalanx morphology"
+    ) == [
         "HP:0002099",  # Asthma
         "HP:0004322",  # Short stature
     ]
