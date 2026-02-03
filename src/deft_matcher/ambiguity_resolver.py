@@ -16,6 +16,6 @@ class AmbiguityResolver(ABC):
         pass
 
     @abstractmethod
-    def resolve(self, possible_matches: list[OntologyClass]) -> str | None:
+    def resolve(self, possible_matches: list[OntologyClass]) -> OntologyClass | None:
         """Given a list of possible matches for some free text, this function should choose exactly one of them."""
         raise NotImplementedError

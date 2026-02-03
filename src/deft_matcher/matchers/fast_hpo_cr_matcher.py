@@ -57,7 +57,7 @@ class FastHPOCRMatcher(Matcher):
     @staticmethod
     def _initialise_hpo() -> Ontology:
         store = hpotk.configure_ontology_store()
-        return store.load_hpo(release="v2025-11-24")
+        return store.load_hpo(release="v2025-05-06")
 
     def _initialise_id_to_term(self) -> dict[str, OntologyClass]:
         return {term.identifier.value: get_oc(term) for term in self._hpo.terms}

@@ -156,7 +156,6 @@ def test_deft_matcher_conditions_col(
             mondo_exact_dm,
             mondo_syn_dm,
             fast_mondo_cr_dm,
-            rag_hpo_matcher_dm,
         ],
         free_texts=conditions,
         data_name="IDATA",

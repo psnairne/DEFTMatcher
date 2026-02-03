@@ -23,6 +23,7 @@ class DeftMatcher:
     next_index: int
     next_matcher: Matcher | None
     next_resolver: AmbiguityResolver | None
+    free_texts: list[str]
     matched: dict[str, OntologyClass]
     unmatched: set[str]
     logger: Logger
@@ -38,8 +39,9 @@ class DeftMatcher:
         self.next_index = 0
         self.next_matcher = self.get_next_matcher_from_next_index()
         self.next_resolver = self.get_next_resolver_from_next_index()
-        self.matched = {}
+        self.free_texts = free_texts
         self.unmatched = set(free_texts)
+        self.matched = {}
         self.logger = self.initialise_logger()
         self.data_name = data_name
 
@@ -71,16 +73,17 @@ class DeftMatcher:
         self.match(unmatched=self.unmatched, matcher=matcher, resolver=resolver)
 
     def match(self, unmatched: set[str], matcher: Matcher, resolver: AmbiguityResolver):
+
         solved: list[str] = []
 
         for free_text in unmatched:
-            matches = matcher.get_matches(free_text)
-            resolution = resolver.resolve(matches)
+            matches: list[OntologyClass] = matcher.get_matches(free_text)
+            resolution: OntologyClass | None = resolver.resolve(matches)
 
             if resolution is not None:
                 self.matched[free_text] = resolution
                 solved.append(free_text)
-                self.logger.info(f"{free_text} was matched to {resolution}!")
+                self.logger.info(f"{free_text} was matched to {resolution}.")
             else:
                 self.logger.info(f"{free_text} had no resolution.")
 
