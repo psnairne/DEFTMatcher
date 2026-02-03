@@ -1,8 +1,10 @@
+import json
 import random
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from uuid import uuid4
 
 import pandas as pd
+from pandas import DataFrame
 
 from deft_matcher.ambiguity_resolver import AmbiguityResolver
 from deft_matcher.decisive_matcher import DecisiveMatcher
@@ -24,6 +26,22 @@ class MatchData:
     match: OntologyClass
     matcher_name: str
     resolver_name: str
+
+
+@dataclass(frozen=True)
+class MetaData:
+    """
+    Holds serialisable info on the set-up and results of a DeftMatcher pipeline.
+    """
+
+    time_created: str
+    decisive_matchers: list[tuple[str, str]]
+    number_of_free_texts: int
+    number_of_unique_free_texts: int
+    number_of_free_texts_matched: int
+    number_of_unique_free_texts_matched: int
+    number_of_free_texts_unmatched: int
+    number_of_unique_free_texts_unmatched: int
 
 
 class DeftMatcher:
@@ -89,7 +107,6 @@ class DeftMatcher:
         self.match(unmatched=self.unmatched, matcher=matcher, resolver=resolver)
 
     def match(self, unmatched: set[str], matcher: Matcher, resolver: AmbiguityResolver):
-
         matcher_name = matcher.name
         resolver_name = resolver.name
 
@@ -113,39 +130,6 @@ class DeftMatcher:
         self.log_match_info(
             matcher_name=matcher.name, resolver_name=resolver.name, solved=solved
         )
-
-    def output_results(self, output_dir: Path):
-        # create the following CSV:
-        # file name should be a UID_results.scv
-        # FREE_TEXT,CURIE_ID,LABEL,MATCHER,RESOLVER
-        df = pd.DataFrame(
-            [
-                {
-                    "FREE_TEXT": free_text,
-                    "CURIE_ID": data.match.curie_id,
-                    "LABEL": data.match.label,
-                    "MATCHER": data.matcher_name,
-                    "RESOLVER": data.resolver_name,
-                }
-                for free_text, data in self.matchings.items()
-            ]
-        )
-
-        results_dir = output_dir / f"deft_matcher_results_{uuid4()}"
-        results_dir.mkdir(parents=True, exist_ok=False)
-        output_path = results_dir / "matchings.csv"
-        df.to_csv(output_path, index=False)
-
-        # file name should be a UID_metadata.json
-        # time created
-        # original input
-        # which matchers and resolvers ran
-        # original number of free texts
-        # original number of unique free texts
-        # how many of the original number of free texts were matched
-        # how many of the unique free texts were matched
-        # the unique unmatched strings
-        pass
 
     def get_next_matcher_from_next_index(self) -> Matcher | None:
         if self.next_index <= len(self.decisive_matchers) - 1:
@@ -171,6 +155,67 @@ class DeftMatcher:
         self.next_matcher = self.get_next_matcher_from_next_index()
         self.next_resolver = self.get_next_resolver_from_next_index()
 
+    # ---------------- OUTPUTTING RESULTS ----------------
+
+    def output_results(self, output_dir: Path):
+        results_dir = output_dir / f"deft_matcher_results_{uuid4()}"
+        results_dir.mkdir(parents=True, exist_ok=False)
+
+        self.logger.info(f"Outputting DEFTMatcher results to folder {results_dir}.")
+
+        results_df = self.create_results_df()
+        metadata = self.create_metadata()
+
+        matchings_path = results_dir / "matchings.csv"
+        metadata_path = results_dir / "metadata.json"
+
+        results_df.to_csv(matchings_path, index=False)
+
+        with metadata_path.open("w", encoding="utf-8") as f:
+            json.dump(asdict(metadata), f, indent=2)
+
+        self.logger.info(
+            f"DEFTMatcher results successfully outputted to folder {results_dir}."
+        )
+
+    def create_results_df(self) -> DataFrame:
+        df = pd.DataFrame(
+            [
+                {
+                    "FREE_TEXT": free_text,
+                    "CURIE_ID": data.match.curie_id,
+                    "LABEL": data.match.label,
+                    "MATCHER": data.matcher_name,
+                    "RESOLVER": data.resolver_name,
+                }
+                for free_text, data in self.matchings.items()
+            ]
+        )
+        return df
+
+    def create_metadata(self) -> MetaData:
+        decisive_matchers_applied: list[DecisiveMatcher] = self.decisive_matchers[
+            0 : self.next_index
+        ]
+        metadata = MetaData(
+            time_created=datetime.now().isoformat(),
+            decisive_matchers=[
+                (dm.matcher.name, dm.ambiguity_resolver.name)
+                for dm in decisive_matchers_applied
+            ],
+            number_of_free_texts=len(self.free_texts),
+            number_of_unique_free_texts=len(set(self.free_texts)),
+            number_of_free_texts_matched=sum(
+                1 for item in self.free_texts if item in self.matchings
+            ),
+            number_of_unique_free_texts_matched=len(self.matchings),
+            number_of_free_texts_unmatched=sum(
+                1 for item in self.free_texts if item not in self.matchings
+            ),
+            number_of_unique_free_texts_unmatched=len(self.unmatched),
+        )
+        return metadata
+
     # ---------------- LOGGING METHODS ----------------
 
     @staticmethod
@@ -192,7 +237,7 @@ class DeftMatcher:
 
         return logger
 
-    def startup_log_str(self):
+    def startup_log_str(self) -> str:
         header_str = f"Applying the DEFTMatcher pipeline to {self.data_name} with matchers and resolvers:\n"
         matcher_resolver_str = "\n".join(
             f"  - {dm.matcher.name} and {dm.ambiguity_resolver.name}"
