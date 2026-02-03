@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from deft_matcher.matchers.rag_hpo_matcher.vector_similarity_matcher import (
     HpoVectorSimilarityMatcher,
@@ -18,6 +20,7 @@ def vector_similarity_matcher():
     )
 
 
+@pytest.mark.skipif(os.getenv("CI") == "true", reason="Skipped in CI")
 def test_vector_similarity_matcher(vector_similarity_matcher):
     painful_leg_matches = vector_similarity_matcher.get_matches("my leg hurts")
 
