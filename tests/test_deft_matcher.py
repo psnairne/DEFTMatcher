@@ -165,10 +165,6 @@ def test_deft_matcher_conditions_col(
         matcher=vector_similarity_matcher, ambiguity_resolver=choose_first
     )
 
-    rag_hpo_matcher_dm = DecisiveMatcher(
-        matcher=rag_hpo_matcher, ambiguity_resolver=choose_first
-    )
-
     conditions_normaliser = DeftMatcher(
         decisive_matchers=[
             hpo_exact_dm,
