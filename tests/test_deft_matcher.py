@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import hpotk
 import pytest
 import pandas as pd
@@ -180,3 +182,6 @@ def test_deft_matcher_conditions_col(
     )
 
     conditions_normaliser.run()
+    conditions_normaliser.output_results(
+        Path("/Users/patrick/DEFTMatcher/tests/deft_matcher_output")
+    )

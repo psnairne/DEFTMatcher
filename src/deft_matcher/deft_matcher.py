@@ -1,4 +1,11 @@
+import json
 import random
+from dataclasses import dataclass, asdict
+from uuid import uuid4
+
+import pandas as pd
+from pandas import DataFrame
+
 from deft_matcher.ambiguity_resolver import AmbiguityResolver
 from deft_matcher.decisive_matcher import DecisiveMatcher
 from deft_matcher.matcher import Matcher
@@ -8,6 +15,44 @@ import logging
 from logging import Logger
 
 from deft_matcher.ontology_class import OntologyClass
+
+
+@dataclass(frozen=True)
+class MatchData:
+    """
+    Holds info on a match made by DEFTMatcher.
+    """
+
+    match: OntologyClass
+    matcher_name: str
+    resolver_name: str
+
+
+@dataclass(frozen=True)
+class MetaDataStatistics:
+    """
+    Holds serialisable statistics on the results of a DeftMatcher pipeline.
+    """
+
+    number_of_free_texts: int
+    number_of_unique_free_texts: int
+    number_of_free_texts_matched: int
+    number_of_unique_free_texts_matched: int
+    number_of_free_texts_unmatched: int
+    number_of_unique_free_texts_unmatched: int
+
+
+@dataclass(frozen=True)
+class MetaData:
+    """
+    Holds serialisable info on the set-up and results of a DeftMatcher pipeline.
+    """
+
+    time_created: str
+    decisive_matchers: list[tuple[str, str]]
+    matching_uuid: str
+    statistics: MetaDataStatistics
+    unique_unmatched_texts: list[str]
 
 
 class DeftMatcher:
@@ -24,7 +69,7 @@ class DeftMatcher:
     next_matcher: Matcher | None
     next_resolver: AmbiguityResolver | None
     free_texts: list[str]
-    matched: dict[str, OntologyClass]
+    matchings: dict[str, MatchData]
     unmatched: set[str]
     logger: Logger
     data_name: str
@@ -41,7 +86,7 @@ class DeftMatcher:
         self.next_resolver = self.get_next_resolver_from_next_index()
         self.free_texts = free_texts
         self.unmatched = set(free_texts)
-        self.matched = {}
+        self.matchings = {}
         self.logger = self.initialise_logger()
         self.data_name = data_name
 
@@ -73,6 +118,9 @@ class DeftMatcher:
         self.match(unmatched=self.unmatched, matcher=matcher, resolver=resolver)
 
     def match(self, unmatched: set[str], matcher: Matcher, resolver: AmbiguityResolver):
+        matcher_name = matcher.name
+        resolver_name = resolver.name
+
         solved: list[str] = []
 
         for free_text in unmatched:
@@ -80,7 +128,9 @@ class DeftMatcher:
             resolution: OntologyClass | None = resolver.resolve(matches)
 
             if resolution is not None:
-                self.matched[free_text] = resolution
+                self.matchings[free_text] = MatchData(
+                    resolution, matcher_name, resolver_name
+                )
                 solved.append(free_text)
                 self.logger.info(f"{free_text} was matched to {resolution}.")
             else:
@@ -91,11 +141,6 @@ class DeftMatcher:
         self.log_match_info(
             matcher_name=matcher.name, resolver_name=resolver.name, solved=solved
         )
-
-    def output_results_to_csv(self, file_path: Path):
-        # create the following CSV:
-        # FREE_TEXT,MATCH,MATCHER,RESOLVER
-        pass
 
     def get_next_matcher_from_next_index(self) -> Matcher | None:
         if self.next_index <= len(self.decisive_matchers) - 1:
@@ -121,6 +166,77 @@ class DeftMatcher:
         self.next_matcher = self.get_next_matcher_from_next_index()
         self.next_resolver = self.get_next_resolver_from_next_index()
 
+    # ---------------- OUTPUTTING RESULTS ----------------
+
+    def output_results(self, output_dir: Path):
+        matching_uuid: str = str(uuid4())
+
+        results_dir = output_dir / f"deft_matcher_results_{matching_uuid}"
+        results_dir.mkdir(parents=True, exist_ok=False)
+
+        self.logger.info(f"Outputting DEFTMatcher results to folder {results_dir}.")
+
+        results_df = self.create_results_df()
+        metadata = self.create_metadata(matching_uuid)
+
+        matchings_path = results_dir / "matchings.csv"
+        metadata_path = results_dir / "metadata.json"
+
+        results_df.to_csv(matchings_path, index=False)
+
+        with metadata_path.open("w", encoding="utf-8") as f:
+            json.dump(asdict(metadata), f, indent=2)
+
+        self.logger.info(
+            f"DEFTMatcher results successfully outputted to folder {results_dir}."
+        )
+
+    def create_results_df(self) -> DataFrame:
+        df = pd.DataFrame(
+            [
+                {
+                    "FREE_TEXT": free_text,
+                    "CURIE_ID": data.match.curie_id,
+                    "LABEL": data.match.label,
+                    "MATCHER": data.matcher_name,
+                    "RESOLVER": data.resolver_name,
+                }
+                for free_text, data in self.matchings.items()
+            ]
+        )
+        return df
+
+    def create_metadata(self, matching_uuid: str) -> MetaData:
+        decisive_matchers_applied: list[DecisiveMatcher] = self.decisive_matchers[
+            0 : self.next_index
+        ]
+
+        statistics = MetaDataStatistics(
+            number_of_free_texts=len(self.free_texts),
+            number_of_unique_free_texts=len(set(self.free_texts)),
+            number_of_free_texts_matched=sum(
+                1 for item in self.free_texts if item in self.matchings
+            ),
+            number_of_unique_free_texts_matched=len(self.matchings),
+            number_of_free_texts_unmatched=sum(
+                1 for item in self.free_texts if item not in self.matchings
+            ),
+            number_of_unique_free_texts_unmatched=len(self.unmatched),
+        )
+
+        metadata = MetaData(
+            time_created=datetime.now().isoformat(),
+            decisive_matchers=[
+                (dm.matcher.name, dm.ambiguity_resolver.name)
+                for dm in decisive_matchers_applied
+            ],
+            matching_uuid=matching_uuid,
+            statistics=statistics,
+            unique_unmatched_texts=list(self.unmatched),
+        )
+
+        return metadata
+
     # ---------------- LOGGING METHODS ----------------
 
     @staticmethod
@@ -142,7 +258,7 @@ class DeftMatcher:
 
         return logger
 
-    def startup_log_str(self):
+    def startup_log_str(self) -> str:
         header_str = f"Applying the DEFTMatcher pipeline to {self.data_name} with matchers and resolvers:\n"
         matcher_resolver_str = "\n".join(
             f"  - {dm.matcher.name} and {dm.ambiguity_resolver.name}"
@@ -179,10 +295,10 @@ class DeftMatcher:
             return "No strings were matched."
         elif num_solved == 1:
             solved_text = solved[0]
-            return f"Only 1 string was matched: {self.example_match_str(solved_text, self.matched[solved_text])}."
+            return f"Only 1 string was matched: {self.example_match_str(solved_text, self.matchings[solved_text])}."
         else:
             examples = [
-                self.example_match_str(text, self.matched[text])
+                self.example_match_str(text, self.matchings[text])
                 for text in solved[:num_examples]
             ]
             examples_str = "\n".join(f"  - {ex}" for ex in examples)
