@@ -73,7 +73,6 @@ class DeftMatcher:
         self.match(unmatched=self.unmatched, matcher=matcher, resolver=resolver)
 
     def match(self, unmatched: set[str], matcher: Matcher, resolver: AmbiguityResolver):
-
         solved: list[str] = []
 
         for free_text in unmatched:
