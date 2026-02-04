@@ -108,11 +108,14 @@ class HpoCandidateRetriever:
             query_vec, amount_to_search
         )  # type: ignore[arg-type]
 
-        seen_hpo_ids: Set[str] = set()
-        candidates: List[Dict[str, str | float]] = []
-        for similarity_score, idx in sorted(
-            zip(similarities, indices), key=lambda x: x[0], reverse=True
-        ):
+        seen_hpo_ids: set[str] = set()
+        candidates: list[dict[str, str | float]] = []
+
+        ranked_search_results = sorted(
+            zip(similarities, indices), key=lambda pair: pair[0], reverse=True
+        )
+
+        for similarity_score, idx in ranked_search_results:
             metadata: dict[str, str] = self._embedding_metadata[idx]
             hpo_id: str = metadata.get("hp_id")
             syn_or_label: str = metadata.get("info")
@@ -153,11 +156,14 @@ class HpoCandidateRetriever:
         return candidates
 
     def get_most_similar(
-        self, phrase: str, amount_to_search: int, similarity_threshold: float
-    ) -> str | None:
+        self,
+        phrase: str,
+        amount_to_search: int,
+        similarity_threshold: float,
+        max_candidates: int,
+    ) -> list[str]:
         """
         Retrieves the best candidates based on cosine similarity score.
-        If no candidate passes the similarity threshold, then None is returned.
         """
 
         similarities: ndarray[float]
@@ -168,18 +174,30 @@ class HpoCandidateRetriever:
             query_vec, amount_to_search
         )  # type: ignore[arg-type]
 
-        for similarity_score, idx in sorted(
-            zip(similarities, indices), key=lambda x: x[0], reverse=True
-        ):
+        seen_hpo_ids: Set[str] = set()
+        candidates: list[str] = []
+
+        ranked_search_results = sorted(
+            zip(similarities, indices), key=lambda pair: pair[0], reverse=True
+        )
+
+        for similarity_score, idx in ranked_search_results:
+            if similarity_score < similarity_threshold:
+                break
+
             metadata: dict[str, str] = self._embedding_metadata[idx]
             hpo_id: str = metadata.get("hp_id")
             syn_or_label: str = metadata.get("info")
 
             if syn_or_label.startswith("obsolete"):
                 continue
-            elif similarity_score < similarity_threshold:
-                break
-            else:
-                return hpo_id
 
-        return None
+            if hpo_id in seen_hpo_ids:
+                continue
+
+            seen_hpo_ids.add(hpo_id)
+            candidates.append(hpo_id)
+            if len(candidates) >= max_candidates:
+                break
+
+        return candidates

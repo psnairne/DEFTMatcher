@@ -24,6 +24,7 @@ class HpoVectorSimilarityMatcher(Matcher):
         embedding_metadata_path: str,
         embedding_model_path: str,
         similarity_threshold: float = 0.8,
+        max_candidates: int = 1,
     ) -> None:
         self.embedded_hpo_path = embedded_hpo_path
         self.embedding_metadata_path = embedding_metadata_path
@@ -33,6 +34,7 @@ class HpoVectorSimilarityMatcher(Matcher):
         )
         # parameters for candidate retrieval
         self.similarity_threshold = similarity_threshold
+        self.max_candidates = max_candidates
         self._ontology = self._initialise_hpo()
         self._id_to_term = self._initialise_id_to_term()
 
@@ -49,14 +51,11 @@ class HpoVectorSimilarityMatcher(Matcher):
         return "HpoVectorSimilarityMatcher"
 
     def get_matches(self, free_text: str) -> list[OntologyClass]:
-        candidate: str | None = self._hpo_candidate_retriever.get_most_similar(
+        candidates: list[str] = self._hpo_candidate_retriever.get_most_similar(
             phrase=free_text,
             amount_to_search=500,
             similarity_threshold=self.similarity_threshold,
+            max_candidates=self.max_candidates,
         )
 
-        if candidate is None:
-            return []
-        else:
-            hpo_term: OntologyClass = self._id_to_term[candidate]
-            return [hpo_term]
+        return [self._id_to_term[candidate] for candidate in candidates]
