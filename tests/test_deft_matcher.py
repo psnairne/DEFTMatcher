@@ -167,7 +167,17 @@ def test_deft_matcher_conditions_col(
         matcher=vector_similarity_matcher, ambiguity_resolver=choose_first
     )
 
-    config = DeftMatcherConfig(decisive_matchers=[fast_hpo_cr_dm])
+    config = DeftMatcherConfig(
+        decisive_matchers=[
+            hpo_exact_dm,
+            hpo_syn_dm,
+            fast_hpo_cr_dm,
+            mondo_exact_dm,
+            mondo_syn_dm,
+            fast_mondo_cr_dm,
+            vector_similarity_matcher_dm,
+        ]
+    )
 
     data = DeftMatcherData(free_texts=conditions, data_name="IDATA")
 
