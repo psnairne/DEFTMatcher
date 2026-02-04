@@ -17,6 +17,7 @@ def vector_similarity_matcher():
         embedding_metadata_path=embedding_metadata_path,
         embedding_model_path=embedding_model_path,
         similarity_threshold=0.65,
+        max_candidates=1,
     )
 
 
