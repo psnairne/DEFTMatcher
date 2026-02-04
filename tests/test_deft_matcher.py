@@ -10,14 +10,17 @@ from hpotk import OntologyType, Ontology, OntologyStore
 from deft_matcher.ambiguity_resolvers.choose_first_resolver import ChooseFirstResolver
 from deft_matcher.decisive_matcher import DecisiveMatcher
 from deft_matcher.deft_matcher import DeftMatcher, DeftMatcherConfig, DeftMatcherData
+from deft_matcher.matchers.constant_matcher import ConstantMatcher
 from deft_matcher.matchers.exact_matcher import ExactMatcher
 from deft_matcher.matchers.fast_hpo_cr_matcher import FastHPOCRMatcher
 from deft_matcher.matchers.fast_mondo_cr_matcher import FastMONDOCRMatcher
+from deft_matcher.matchers.null_matcher import NullMatcher
 from deft_matcher.matchers.rag_hpo_matcher.rag_hpo_matcher import RagHpoMatcher
 from deft_matcher.matchers.rag_hpo_matcher.vector_similarity_matcher import (
     HpoVectorSimilarityMatcher,
 )
 from deft_matcher.matchers.synonym_matcher import SynonymMatcher
+from deft_matcher.ontology_class import OntologyClass
 
 
 @pytest.fixture
@@ -114,6 +117,11 @@ def vector_similarity_matcher():
 
 
 @pytest.fixture
+def null_matcher() -> NullMatcher:
+    return NullMatcher()
+
+
+@pytest.fixture
 def choose_first() -> ChooseFirstResolver:
     return ChooseFirstResolver()
 
@@ -139,6 +147,7 @@ def test_deft_matcher_conditions_col(
     fast_mondo_cr_matcher,
     vector_similarity_matcher,
     rag_hpo_matcher,
+    null_matcher,
     choose_first,
 ):
     hpo_exact_dm = DecisiveMatcher(
@@ -163,9 +172,11 @@ def test_deft_matcher_conditions_col(
         matcher=fast_mondo_cr_matcher, ambiguity_resolver=choose_first
     )
 
-    vector_similarity_matcher_dm = DecisiveMatcher(
+    vector_similarity_dm = DecisiveMatcher(
         matcher=vector_similarity_matcher, ambiguity_resolver=choose_first
     )
+
+    null_dm = DecisiveMatcher(matcher=null_matcher, ambiguity_resolver=choose_first)
 
     config = DeftMatcherConfig(
         decisive_matchers=[
@@ -175,7 +186,8 @@ def test_deft_matcher_conditions_col(
             mondo_exact_dm,
             mondo_syn_dm,
             fast_mondo_cr_dm,
-            vector_similarity_matcher_dm,
+            vector_similarity_dm,
+            null_dm,
         ]
     )
 
