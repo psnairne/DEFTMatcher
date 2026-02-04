@@ -5,13 +5,17 @@ from deft_matcher.ontology_class import OntologyClass
 
 
 @pytest.fixture
-def constant_matcher_null():
-    oc = OntologyClass("", "")
+def oc() -> OntologyClass:
+    return OntologyClass("MONDO:0007947", "Marfan syndrome")
+
+
+@pytest.fixture
+def constant_matcher(oc: OntologyClass) -> ConstantMatcher:
     return ConstantMatcher(oc)
 
 
-def test_constant_matcher(constant_matcher_null):
-    null_match = constant_matcher_null.get_matches("Asthma")
+def test_constant_matcher(constant_matcher: ConstantMatcher, oc: OntologyClass):
+    match = constant_matcher.get_matches("Asthma")
 
-    assert len(null_match) == 1
-    assert null_match[0] == OntologyClass("", "")
+    assert len(match) == 1
+    assert match[0] == oc
