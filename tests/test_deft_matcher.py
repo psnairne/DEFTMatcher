@@ -14,7 +14,7 @@ from deft_matcher.matchers.exact_matcher import ExactMatcher
 from deft_matcher.matchers.fast_hpo_cr_matcher import FastHPOCRMatcher
 from deft_matcher.matchers.fast_mondo_cr_matcher import FastMONDOCRMatcher
 from deft_matcher.matchers.rag_hpo_matcher.rag_hpo_matcher import RagHpoMatcher
-from deft_matcher.matchers.rag_hpo_matcher.vector_similarity_matcher import (
+from deft_matcher.matchers.vector_similarity_matcher import (
     HpoVectorSimilarityMatcher,
 )
 from deft_matcher.matchers.synonym_matcher import SynonymMatcher
