@@ -10,7 +10,6 @@ from hpotk import OntologyType, Ontology, OntologyStore
 from deft_matcher.ambiguity_resolvers.choose_first_resolver import ChooseFirstResolver
 from deft_matcher.decisive_matcher import DecisiveMatcher
 from deft_matcher.deft_matcher import DeftMatcher, DeftMatcherConfig, DeftMatcherData
-from deft_matcher.matchers.constant_matcher import ConstantMatcher
 from deft_matcher.matchers.exact_matcher import ExactMatcher
 from deft_matcher.matchers.fast_hpo_cr_matcher import FastHPOCRMatcher
 from deft_matcher.matchers.fast_mondo_cr_matcher import FastMONDOCRMatcher
@@ -20,7 +19,6 @@ from deft_matcher.matchers.rag_hpo_matcher.vector_similarity_matcher import (
     HpoVectorSimilarityMatcher,
 )
 from deft_matcher.matchers.synonym_matcher import SynonymMatcher
-from deft_matcher.ontology_class import OntologyClass
 
 
 @pytest.fixture
