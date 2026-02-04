@@ -1,8 +1,11 @@
-import os
-
 import pytest
+
+from deft_matcher.matchers.human_matcher import HumanMatcher
+from deft_matcher.matcher import Matcher
 from deft_matcher.matchers.vector_similarity_matcher import HpoVectorSimilarityMatcher
 from deft_matcher.ontology_class import OntologyClass
+from deft_matcher.matchers.human_matcher.user_interfaces import MockInterface
+from deft_matcher.matchers.human_matcher.user_interfaces import UserInterface
 
 
 @pytest.fixture
@@ -19,9 +22,15 @@ def vector_similarity_matcher():
     )
 
 
-@pytest.mark.skipif(os.getenv("CI") == "true", reason="Skipped in CI")
-def test_vector_similarity_matcher(vector_similarity_matcher):
-    painful_leg_matches = vector_similarity_matcher.get_matches("my leg hurts")
+@pytest.fixture
+def human_matcher(vector_similarity_matcher):
+    interface: UserInterface = MockInterface()
+    candidate_retriever: Matcher = vector_similarity_matcher
+    return HumanMatcher(interface, candidate_retriever)
 
-    assert len(painful_leg_matches) == 1
-    assert painful_leg_matches[0] == OntologyClass("HP:0012514", "Lower limb pain")
+
+def test_human_matcher(human_matcher):
+    osthma_matches = human_matcher.get_matches("Osthma")
+
+    assert len(osthma_matches) == 1
+    assert osthma_matches[0] == OntologyClass("HP:0002099", "Asthma")
