@@ -9,7 +9,7 @@ from hpotk import OntologyType, Ontology, OntologyStore
 
 from deft_matcher.ambiguity_resolvers.choose_first_resolver import ChooseFirstResolver
 from deft_matcher.decisive_matcher import DecisiveMatcher
-from deft_matcher.deft_matcher import DeftMatcher
+from deft_matcher.deft_matcher import DeftMatcher, DeftMatcherConfig, DeftMatcherData
 from deft_matcher.matchers.exact_matcher import ExactMatcher
 from deft_matcher.matchers.fast_hpo_cr_matcher import FastHPOCRMatcher
 from deft_matcher.matchers.fast_mondo_cr_matcher import FastMONDOCRMatcher
@@ -167,7 +167,7 @@ def test_deft_matcher_conditions_col(
         matcher=vector_similarity_matcher, ambiguity_resolver=choose_first
     )
 
-    conditions_normaliser = DeftMatcher(
+    config = DeftMatcherConfig(
         decisive_matchers=[
             hpo_exact_dm,
             hpo_syn_dm,
@@ -176,10 +176,12 @@ def test_deft_matcher_conditions_col(
             mondo_syn_dm,
             fast_mondo_cr_dm,
             vector_similarity_matcher_dm,
-        ],
-        free_texts=conditions,
-        data_name="IDATA",
+        ]
     )
+
+    data = DeftMatcherData(free_texts=conditions, data_name="IDATA")
+
+    conditions_normaliser = DeftMatcher(config=config, data=data)
 
     conditions_normaliser.run()
     conditions_normaliser.output_results(

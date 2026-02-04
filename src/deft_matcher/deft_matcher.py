@@ -17,6 +17,25 @@ from logging import Logger
 from deft_matcher.ontology_class import OntologyClass
 
 
+@dataclass
+class DeftMatcherConfig:
+    """
+    Holds the configuration for a DeftMatcher pipeline.
+    """
+
+    decisive_matchers: list[DecisiveMatcher]
+
+
+@dataclass
+class DeftMatcherData:
+    """
+    Holds the data input for a DeftMatcher pipeline.
+    """
+
+    free_texts: list[str]
+    data_name: str
+
+
 @dataclass(frozen=True)
 class MatchData:
     """
@@ -74,21 +93,16 @@ class DeftMatcher:
     logger: Logger
     data_name: str
 
-    def __init__(
-        self,
-        decisive_matchers: list[DecisiveMatcher],
-        free_texts: list[str],
-        data_name: str,
-    ) -> None:
-        self.decisive_matchers = decisive_matchers
+    def __init__(self, config: DeftMatcherConfig, data: DeftMatcherData) -> None:
+        self.decisive_matchers = config.decisive_matchers
         self.next_index = 0
         self.next_matcher = self.get_next_matcher_from_next_index()
         self.next_resolver = self.get_next_resolver_from_next_index()
-        self.free_texts = free_texts
-        self.unmatched = set(free_texts)
+        self.free_texts = data.free_texts
+        self.unmatched = set(data.free_texts)
         self.matchings = {}
         self.logger = self.initialise_logger()
-        self.data_name = data_name
+        self.data_name = data.data_name
 
         self.logger.info(self.startup_log_str())
 
@@ -295,10 +309,10 @@ class DeftMatcher:
             return "No strings were matched."
         elif num_solved == 1:
             solved_text = solved[0]
-            return f"Only 1 string was matched: {self.example_match_str(solved_text, self.matchings[solved_text])}."
+            return f"Only 1 string was matched: {self.example_match_str(solved_text, self.matchings[solved_text].match.label)}."
         else:
             examples = [
-                self.example_match_str(text, self.matchings[text])
+                self.example_match_str(text, self.matchings[text].match.label)
                 for text in solved[:num_examples]
             ]
             examples_str = "\n".join(f"  - {ex}" for ex in examples)
