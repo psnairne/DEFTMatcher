@@ -67,6 +67,7 @@ class MetaData:
     Holds serialisable info on the set-up and results of a DeftMatcher pipeline.
     """
 
+    time_started: str
     time_created: str
     decisive_matchers: list[tuple[str, str]]
     matching_uuid: str
@@ -83,6 +84,7 @@ class DeftMatcher:
     The .next() and the .run() functions are your friends.
     """
 
+    time_started: str
     decisive_matchers: list[DecisiveMatcher]
     next_index: int
     next_matcher: Matcher | None
@@ -94,6 +96,7 @@ class DeftMatcher:
     data_name: str
 
     def __init__(self, config: DeftMatcherConfig, data: DeftMatcherData) -> None:
+        self.time_started = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
         self.decisive_matchers = config.decisive_matchers
         self.next_index = 0
         self.next_matcher = self.get_next_matcher_from_next_index()
@@ -103,7 +106,6 @@ class DeftMatcher:
         self.matchings = {}
         self.logger = self.initialise_logger()
         self.data_name = data.data_name
-
         self.logger.info(self.startup_log_str())
 
     def run(self):
@@ -183,18 +185,20 @@ class DeftMatcher:
     # ---------------- OUTPUTTING RESULTS ----------------
 
     def output_results(self, output_dir: Path):
-        matching_uuid: str = str(uuid4())
+        uuid: str = str(uuid4())
 
-        results_dir = output_dir / f"deft_matcher_results_{matching_uuid}"
+        results_dir: Path = (
+            output_dir / f"deft_matcher_results_{uuid}_{self.time_started}"
+        )
         results_dir.mkdir(parents=True, exist_ok=False)
 
         self.logger.info(f"Outputting DEFTMatcher results to folder {results_dir}.")
 
-        results_df = self.create_results_df()
-        metadata = self.create_metadata(matching_uuid)
+        results_df: DataFrame = self.create_results_df()
+        metadata: MetaData = self.create_metadata(uuid)
 
-        matchings_path = results_dir / "matchings.csv"
-        metadata_path = results_dir / "metadata.json"
+        matchings_path: Path = results_dir / "matchings.csv"
+        metadata_path: Path = results_dir / "metadata.json"
 
         results_df.to_csv(matchings_path, index=False)
 
@@ -206,7 +210,7 @@ class DeftMatcher:
         )
 
     def create_results_df(self) -> DataFrame:
-        df = pd.DataFrame(
+        df: DataFrame = pd.DataFrame(
             [
                 {
                     "FREE_TEXT": free_text,
@@ -239,7 +243,8 @@ class DeftMatcher:
         )
 
         metadata = MetaData(
-            time_created=datetime.now().isoformat(),
+            time_started=self.time_started,
+            time_created=datetime.now().strftime("%d-%m-%Y_%H-%M-%S"),
             decisive_matchers=[
                 (dm.matcher.name, dm.ambiguity_resolver.name)
                 for dm in decisive_matchers_applied
@@ -253,12 +258,11 @@ class DeftMatcher:
 
     # ---------------- LOGGING METHODS ----------------
 
-    @staticmethod
-    def initialise_logger() -> Logger:
+    def initialise_logger(self) -> Logger:
         log_dir = Path("logs")
         log_dir.mkdir(exist_ok=True)
 
-        timestamp = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
+        timestamp = self.time_started
         log_file = log_dir / f"{timestamp}.log"
 
         logging.basicConfig(
