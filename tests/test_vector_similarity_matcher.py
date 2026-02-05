@@ -1,9 +1,7 @@
 import os
 
 import pytest
-from deft_matcher.matchers.rag_hpo_matcher.vector_similarity_matcher import (
-    HpoVectorSimilarityMatcher,
-)
+from deft_matcher.matchers.vector_similarity_matcher import HpoVectorSimilarityMatcher
 from deft_matcher.ontology_class import OntologyClass
 
 

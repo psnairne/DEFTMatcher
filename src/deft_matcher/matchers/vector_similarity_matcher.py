@@ -13,6 +13,8 @@ class HpoVectorSimilarityMatcher(Matcher):
     """
     Given an hpo_embeddings.npz file and a metadata.json file whose indexes agree with those of the embeddings,
     this matcher will retrieve candidate HPO terms based on a vector similarity search.
+
+    Note: the version of the embedded HPO MUST agree with the version of HPO taken from HPO-toolkit.
     """
 
     _ontology: Ontology
@@ -41,7 +43,7 @@ class HpoVectorSimilarityMatcher(Matcher):
     @staticmethod
     def _initialise_hpo() -> Ontology:
         store = hpotk.configure_ontology_store()
-        return store.load_hpo(release="v2026-01-08")
+        return store.load_hpo(release="v2025-11-24")
 
     def _initialise_id_to_term(self) -> dict[str, OntologyClass]:
         return {term.identifier.value: get_oc(term) for term in self._ontology.terms}
