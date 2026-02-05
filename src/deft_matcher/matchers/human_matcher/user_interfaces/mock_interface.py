@@ -6,7 +6,7 @@ from deft_matcher.matchers.human_matcher.user_interfaces.user_interface import (
 
 class MockInterface(UserInterface):
     """
-    TODO
+    Acts as if the user always inputs OntologyClass("HP:0002099", "Asthma").
     """
 
     interface: UserInterface

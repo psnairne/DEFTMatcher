@@ -1,11 +1,15 @@
 import pytest
 
-from deft_matcher.matchers.human_matcher import HumanMatcher
 from deft_matcher.matcher import Matcher
+from deft_matcher.matchers.human_matcher.human_matcher import HumanMatcher
+from deft_matcher.matchers.human_matcher.user_interfaces.mock_interface import (
+    MockInterface,
+)
+from deft_matcher.matchers.human_matcher.user_interfaces.user_interface import (
+    UserInterface,
+)
 from deft_matcher.matchers.vector_similarity_matcher import HpoVectorSimilarityMatcher
 from deft_matcher.ontology_class import OntologyClass
-from deft_matcher.matchers.human_matcher.user_interfaces import MockInterface
-from deft_matcher.matchers.human_matcher.user_interfaces import UserInterface
 
 
 @pytest.fixture

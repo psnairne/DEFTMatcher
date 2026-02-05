@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import hpotk
@@ -11,12 +12,14 @@ from deft_matcher.deft_matcher import DeftMatcher, DeftMatcherConfig, DeftMatche
 from deft_matcher.matchers.exact_matcher import ExactMatcher
 from deft_matcher.matchers.fast_hpo_cr_matcher import FastHPOCRMatcher
 from deft_matcher.matchers.fast_mondo_cr_matcher import FastMONDOCRMatcher
-from deft_matcher.matchers.human_matcher import HumanMatcher
+from deft_matcher.matchers.human_matcher.human_matcher import HumanMatcher
+from deft_matcher.matchers.human_matcher.user_interfaces.console_interface import (
+    ConsoleInterface,
+)
 from deft_matcher.matchers.null_matcher import NullMatcher
 from deft_matcher.matchers.rag_hpo_matcher.rag_hpo_matcher import RagHpoMatcher
 from deft_matcher.matchers.vector_similarity_matcher import HpoVectorSimilarityMatcher
 from deft_matcher.matchers.synonym_matcher import SynonymMatcher
-from deft_matcher.matchers.human_matcher.user_interfaces import ConsoleInterface
 
 
 def store() -> OntologyStore:
@@ -28,6 +31,9 @@ def hpo() -> Ontology:
 
 
 def mondo() -> Ontology:
+    # silences noisy hpotk comments
+    logging.getLogger("hpotk").setLevel(logging.ERROR)
+
     return store().load_ontology(
         ontology_type=OntologyType.MONDO,
         release="v2025-12-02",
@@ -123,6 +129,16 @@ def conditions() -> list[str]:
 
 
 def main():
+    # _orig_warning = logging.Logger.warning
+    #
+    # def debug_warning(self, msg, *args, **kwargs):
+    #     text = msg % args if args else str(msg)
+    #     if "Unable to extract CURIE" in text:
+    #         breakpoint()
+    #     return _orig_warning(self, msg, *args, **kwargs)
+    #
+    # logging.Logger.warning = debug_warning
+
     hpo_exact_dm = DecisiveMatcher(
         matcher=hpo_exact_matcher(), ambiguity_resolver=choose_first()
     )
@@ -156,7 +172,7 @@ def main():
     null_dm = DecisiveMatcher(matcher=null_matcher(), ambiguity_resolver=choose_first())
 
     config = DeftMatcherConfig(
-        decisive_matchers=[hpo_exact_dm, hpo_syn_dm, human_matcher_dm]
+        decisive_matchers=[hpo_exact_dm, hpo_syn_dm, mondo_exact_dm, human_matcher_dm]
     )
 
     data = DeftMatcherData(free_texts=conditions(), data_name="IDATA")
@@ -170,9 +186,4 @@ def main():
 
 
 if __name__ == "__main__":
-    import warnings
-    from tqdm import tqdm
-
-    tqdm.disable = True
-    warnings.filterwarnings("ignore", message="Unable to extract CURIE.*")
     main()

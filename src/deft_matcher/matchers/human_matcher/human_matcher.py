@@ -1,6 +1,8 @@
 from deft_matcher.matcher import Matcher
+from deft_matcher.matchers.human_matcher.user_interfaces.user_interface import (
+    UserInterface,
+)
 from deft_matcher.ontology_class import OntologyClass
-from deft_matcher.matchers.human_matcher.user_interfaces import UserInterface
 
 
 class HumanMatcher(Matcher):

@@ -142,10 +142,20 @@ def test_deft_matcher_conditions_col(
     fast_hpo_cr_matcher,
     fast_mondo_cr_matcher,
     vector_similarity_matcher,
-    rag_hpo_matcher,
     null_matcher,
     choose_first,
 ):
+    # import sys
+
+    # _orig = sys.stderr.write
+    #
+    # def noisy_write(msg):
+    #     if "tqdm" in msg or "%" in msg:
+    #         breakpoint()  # PyCharm will stop here
+    #     return _orig(msg)
+    #
+    # sys.stderr.write = noisy_write
+
     hpo_exact_dm = DecisiveMatcher(
         matcher=hpo_exact_matcher, ambiguity_resolver=choose_first
     )

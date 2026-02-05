@@ -6,7 +6,7 @@ from deft_matcher.matchers.human_matcher.user_interfaces.user_interface import (
 
 class ConsoleInterface(UserInterface):
     """
-    TODO
+    An interface which uses the console to interact with the user.
     """
 
     interface: UserInterface
@@ -25,7 +25,7 @@ class ConsoleInterface(UserInterface):
         print(f"{free_text}")
         print("-----CANDIDATES-----")
         for i, candidate in enumerate(candidates):
-            print(f"[{i+1}] {candidate}")
+            print(f"[{i + 1}] {candidate}")
         print("--------------------")
         choice = input("Choose a match: ").strip()
         if choice.lower() == "x":

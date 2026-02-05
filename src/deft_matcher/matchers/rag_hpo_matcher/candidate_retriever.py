@@ -75,7 +75,9 @@ class HpoCandidateRetriever:
         """
         Embed a phrase as a 768 dimensional vector.
         """
-        vec: ndarray[np.float32] = self._emb_model.encode(phrase, convert_to_numpy=True)
+        vec: ndarray[np.float32] = self._emb_model.encode(
+            phrase, convert_to_numpy=True, show_progress_bar=False
+        )
         vec = vec.reshape(1, -1)
         faiss.normalize_L2(vec)
         return vec

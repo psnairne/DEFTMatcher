@@ -1,7 +1,11 @@
-from deft_matcher.matchers.human_matcher import HumanMatcher
+from deft_matcher.matchers.human_matcher.human_matcher import HumanMatcher
+from deft_matcher.matchers.human_matcher.user_interfaces.console_interface import (
+    ConsoleInterface,
+)
+from deft_matcher.matchers.human_matcher.user_interfaces.user_interface import (
+    UserInterface,
+)
 from deft_matcher.matchers.vector_similarity_matcher import HpoVectorSimilarityMatcher
-from deft_matcher.matchers.human_matcher.user_interfaces import ConsoleInterface
-from deft_matcher.matchers.human_matcher.user_interfaces import UserInterface
 
 
 def main():

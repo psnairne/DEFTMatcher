@@ -5,7 +5,7 @@ from deft_matcher.ontology_class import OntologyClass
 
 class UserInterface(ABC):
     """
-    TODO
+    A collection of methods needed by DEFTMatcher which should be provided by any UserInterface.
     """
 
     @property
@@ -18,5 +18,5 @@ class UserInterface(ABC):
     def user_selection(
         self, free_text: str, candidates: list[OntologyClass]
     ) -> OntologyClass | None:
-        """TODO"""
+        """Allows the user to select an OntologyClass."""
         raise NotImplementedError
