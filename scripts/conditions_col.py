@@ -102,13 +102,26 @@ def vector_similarity_matcher() -> HpoVectorSimilarityMatcher:
         embedded_hpo_path=embedded_hpo_path,
         embedding_metadata_path=embedding_metadata_path,
         embedding_model_path=embedding_model_path,
-        similarity_threshold=0.0,
+        similarity_threshold=0.75,
+        max_candidates=1,
+    )
+
+
+def vector_similarity_matcher_ten_candidates() -> HpoVectorSimilarityMatcher:
+    embedded_hpo_path = "/Users/patrick/DEFTMatcher/src/deft_matcher/matchers/rag_hpo_matcher/data/hpo_embedded.npz"
+    embedding_metadata_path = "/Users/patrick/DEFTMatcher/src/deft_matcher/matchers/rag_hpo_matcher/data/hpo_meta.json"
+    embedding_model_path = "/Users/patrick/DEFTMatcher/src/deft_matcher/matchers/rag_hpo_matcher/sbert_model"
+    return HpoVectorSimilarityMatcher(
+        embedded_hpo_path=embedded_hpo_path,
+        embedding_metadata_path=embedding_metadata_path,
+        embedding_model_path=embedding_model_path,
+        similarity_threshold=0,
         max_candidates=10,
     )
 
 
 def human_matcher() -> HumanMatcher:
-    return HumanMatcher(ConsoleInterface(), vector_similarity_matcher())
+    return HumanMatcher(ConsoleInterface(), vector_similarity_matcher_ten_candidates())
 
 
 def null_matcher() -> NullMatcher:
@@ -129,16 +142,6 @@ def conditions() -> list[str]:
 
 
 def main():
-    # _orig_warning = logging.Logger.warning
-    #
-    # def debug_warning(self, msg, *args, **kwargs):
-    #     text = msg % args if args else str(msg)
-    #     if "Unable to extract CURIE" in text:
-    #         breakpoint()
-    #     return _orig_warning(self, msg, *args, **kwargs)
-    #
-    # logging.Logger.warning = debug_warning
-
     hpo_exact_dm = DecisiveMatcher(
         matcher=hpo_exact_matcher(), ambiguity_resolver=choose_first()
     )
@@ -172,7 +175,17 @@ def main():
     null_dm = DecisiveMatcher(matcher=null_matcher(), ambiguity_resolver=choose_first())
 
     config = DeftMatcherConfig(
-        decisive_matchers=[hpo_exact_dm, hpo_syn_dm, mondo_exact_dm, human_matcher_dm]
+        decisive_matchers=[
+            hpo_exact_dm,
+            hpo_syn_dm,
+            fast_hpo_cr_dm,
+            mondo_exact_dm,
+            mondo_syn_dm,
+            fast_mondo_cr_dm,
+            vector_similarity_dm,
+            human_matcher_dm,
+            null_dm,
+        ]
     )
 
     data = DeftMatcherData(free_texts=conditions(), data_name="IDATA")

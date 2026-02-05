@@ -1,3 +1,5 @@
+import logging
+
 import hpotk
 import pytest
 from hpotk import SynonymType, SynonymCategory, OntologyType
@@ -14,6 +16,9 @@ def hpo():
 
 @pytest.fixture
 def mondo():
+    # silences noisy hpotk comments
+    logging.getLogger("hpotk").setLevel(logging.ERROR)
+
     store = hpotk.configure_ontology_store()
     return store.load_ontology(
         ontology_type=OntologyType.MONDO,

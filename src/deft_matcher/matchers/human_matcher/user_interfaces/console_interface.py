@@ -21,13 +21,24 @@ class ConsoleInterface(UserInterface):
     def user_selection(
         self, free_text: str, candidates: list[OntologyClass]
     ) -> OntologyClass | None:
-        print("--------------------")
+        print(
+            "-----FREE TEXT-------------------------------------------------------------------"
+        )
         print(f"{free_text}")
         print("-----CANDIDATES-----")
         for i, candidate in enumerate(candidates):
             print(f"[{i + 1}] {candidate}")
         print("--------------------")
-        choice = input("Choose a match: ").strip()
+
+        allowed_choices = [str(i) for i in range(1, len(candidates) + 1)] + ["x"]
+        while True:
+            choice = input("Choose a match (or 'x' for none): ").strip()
+
+            if choice in allowed_choices:
+                break
+            else:
+                print(f"Choice was not valid. Valid choices are: {allowed_choices}")
+
         if choice.lower() == "x":
             return None
 

@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import hpotk
@@ -31,6 +32,9 @@ def hpo(store) -> Ontology:
 
 @pytest.fixture
 def mondo(store) -> Ontology:
+    # silences noisy hpotk comments
+    logging.getLogger("hpotk").setLevel(logging.ERROR)
+
     return store.load_ontology(
         ontology_type=OntologyType.MONDO,
         release="v2025-12-02",
@@ -145,17 +149,6 @@ def test_deft_matcher_conditions_col(
     null_matcher,
     choose_first,
 ):
-    # import sys
-
-    # _orig = sys.stderr.write
-    #
-    # def noisy_write(msg):
-    #     if "tqdm" in msg or "%" in msg:
-    #         breakpoint()  # PyCharm will stop here
-    #     return _orig(msg)
-    #
-    # sys.stderr.write = noisy_write
-
     hpo_exact_dm = DecisiveMatcher(
         matcher=hpo_exact_matcher, ambiguity_resolver=choose_first
     )

@@ -25,9 +25,10 @@ def main():
 
     human_matcher = HumanMatcher(interface, candidate_retriever)
 
-    blah = human_matcher.get_matches("My leg hurts a lot")
+    chosen_match = human_matcher.get_matches("My leg hurts a lot")[0]
 
-    print(f"SUCCESS: {blah}")
+    print("SUCCESS")
+    print(f"YOU CHOSE: {chosen_match}")
 
 
 if __name__ == "__main__":
