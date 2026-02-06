@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 from hpotk import MinimalTerm
-from hpotk import TermId
 
 
 @dataclass(frozen=True)

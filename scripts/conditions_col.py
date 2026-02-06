@@ -122,7 +122,8 @@ def vector_similarity_matcher_ten_candidates() -> HpoVectorSimilarityMatcher:
 
 def human_matcher() -> HumanMatcher:
     return HumanMatcher(
-        ConsoleInterfaceHpo(), vector_similarity_matcher_ten_candidates()
+        ConsoleInterfaceHpo(hpo_version="v2025-11-24"),
+        vector_similarity_matcher_ten_candidates(),
     )
 
 
