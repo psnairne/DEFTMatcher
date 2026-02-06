@@ -1,6 +1,4 @@
-from hpotk import Ontology, MinimalTerm
-
-from deft_matcher.ontology_class import OntologyClass
+from hpotk import Ontology
 
 
 def get_ontology_prefix(ontology: Ontology) -> str:
@@ -9,7 +7,3 @@ def get_ontology_prefix(ontology: Ontology) -> str:
         break
 
     return prefix
-
-
-def get_oc(term: MinimalTerm) -> OntologyClass:
-    return OntologyClass(term.identifier.value, term.name)

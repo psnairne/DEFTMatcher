@@ -11,7 +11,6 @@ from deft_matcher.matcher import Matcher
 from pathlib import Path
 
 from deft_matcher.ontology_class import OntologyClass
-from deft_matcher.utils import get_oc
 
 
 class FastMONDOCRMatcher(Matcher):
@@ -67,7 +66,10 @@ class FastMONDOCRMatcher(Matcher):
         return mondo
 
     def _initialise_id_to_term(self) -> dict[str, OntologyClass]:
-        return {term.identifier.value: get_oc(term) for term in self._mondo.terms}
+        return {
+            term.identifier.value: OntologyClass.from_minimal_term(term)
+            for term in self._mondo.terms
+        }
 
     @property
     def name(self) -> str:

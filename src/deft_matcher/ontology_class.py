@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from hpotk import MinimalTerm
+
 
 @dataclass(frozen=True)
 class OntologyClass:
@@ -10,3 +12,7 @@ class OntologyClass:
 
     curie_id: str
     label: str
+
+    @classmethod
+    def from_minimal_term(cls, minimal_term: "MinimalTerm") -> "OntologyClass":
+        return OntologyClass(minimal_term.identifier.value, minimal_term.name)

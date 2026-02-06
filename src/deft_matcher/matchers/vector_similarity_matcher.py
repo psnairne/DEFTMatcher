@@ -6,7 +6,6 @@ from deft_matcher.matchers.rag_hpo_matcher.candidate_retriever import (
     HpoCandidateRetriever,
 )
 from deft_matcher.ontology_class import OntologyClass
-from deft_matcher.utils import get_oc
 
 
 class HpoVectorSimilarityMatcher(Matcher):
@@ -46,7 +45,10 @@ class HpoVectorSimilarityMatcher(Matcher):
         return store.load_hpo(release="v2025-11-24")
 
     def _initialise_id_to_term(self) -> dict[str, OntologyClass]:
-        return {term.identifier.value: get_oc(term) for term in self._ontology.terms}
+        return {
+            term.identifier.value: OntologyClass.from_minimal_term(term)
+            for term in self._ontology.terms
+        }
 
     @property
     def name(self) -> str:

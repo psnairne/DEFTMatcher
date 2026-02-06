@@ -13,8 +13,8 @@ from deft_matcher.matchers.exact_matcher import ExactMatcher
 from deft_matcher.matchers.fast_hpo_cr_matcher import FastHPOCRMatcher
 from deft_matcher.matchers.fast_mondo_cr_matcher import FastMONDOCRMatcher
 from deft_matcher.matchers.human_matcher.human_matcher import HumanMatcher
-from deft_matcher.matchers.human_matcher.user_interfaces.console_interface import (
-    ConsoleInterface,
+from deft_matcher.matchers.human_matcher.user_interfaces.console_interface_hpo import (
+    ConsoleInterfaceHpo,
 )
 from deft_matcher.matchers.null_matcher import NullMatcher
 from deft_matcher.matchers.rag_hpo_matcher.rag_hpo_matcher import RagHpoMatcher
@@ -121,7 +121,10 @@ def vector_similarity_matcher_ten_candidates() -> HpoVectorSimilarityMatcher:
 
 
 def human_matcher() -> HumanMatcher:
-    return HumanMatcher(ConsoleInterface(), vector_similarity_matcher_ten_candidates())
+    return HumanMatcher(
+        ConsoleInterfaceHpo(hpo_version="v2025-11-24"),
+        vector_similarity_matcher_ten_candidates(),
+    )
 
 
 def null_matcher() -> NullMatcher:
