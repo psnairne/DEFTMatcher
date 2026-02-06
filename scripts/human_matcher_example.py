@@ -9,7 +9,7 @@ from deft_matcher.matchers.vector_similarity_matcher import HpoVectorSimilarityM
 
 
 def main():
-    interface: UserInterface = ConsoleInterface()
+    interface: UserInterface = ConsoleInterface("v2025-11-24")
 
     embedded_hpo_path = "/Users/patrick/DEFTMatcher/src/deft_matcher/matchers/rag_hpo_matcher/data/hpo_embedded.npz"
     embedding_metadata_path = "/Users/patrick/DEFTMatcher/src/deft_matcher/matchers/rag_hpo_matcher/data/hpo_meta.json"
@@ -23,7 +23,7 @@ def main():
         max_candidates=10,
     )
 
-    human_matcher = HumanMatcher(interface, candidate_retriever)
+    human_matcher = HumanMatcher(interface, None)
 
     chosen_match = human_matcher.get_matches("My leg hurts a lot")[0]
 
