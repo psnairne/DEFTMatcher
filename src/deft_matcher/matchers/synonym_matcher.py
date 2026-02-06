@@ -2,7 +2,7 @@ from hpotk import Ontology, SynonymCategory, SynonymType
 
 from deft_matcher.matcher import Matcher
 from deft_matcher.ontology_class import OntologyClass
-from deft_matcher.utils import get_ontology_prefix, get_oc
+from deft_matcher.utils import get_ontology_prefix
 
 
 class SynonymMatcher(Matcher):
@@ -49,7 +49,9 @@ class SynonymMatcher(Matcher):
                     syn.category in self._allowed_synonym_categories
                     and syn.synonym_type in self._allowed_synonym_types
                 ):
-                    syn_to_terms.setdefault(syn.name.lower(), []).append(get_oc(term))
+                    syn_to_terms.setdefault(syn.name.lower(), []).append(
+                        OntologyClass.from_minimal_term(term)
+                    )
 
         return syn_to_terms
 

@@ -2,7 +2,7 @@ from hpotk import Ontology
 
 from deft_matcher.matcher import Matcher
 from deft_matcher.ontology_class import OntologyClass
-from deft_matcher.utils import get_ontology_prefix, get_oc
+from deft_matcher.utils import get_ontology_prefix
 
 
 class ExactMatcher(Matcher):
@@ -19,7 +19,10 @@ class ExactMatcher(Matcher):
         self._label_to_term = self._initialise_label_to_term()
 
     def _initialise_label_to_term(self) -> dict[str, OntologyClass]:
-        return {term.name.lower(): get_oc(term) for term in self._ontology.terms}
+        return {
+            term.name.lower(): OntologyClass.from_minimal_term(term)
+            for term in self._ontology.terms
+        }
 
     @property
     def name(self) -> str:
