@@ -23,12 +23,11 @@ def main():
         max_candidates=10,
     )
 
-    human_matcher = HumanMatcher(interface, None)
+    human_matcher = HumanMatcher(interface, candidate_retriever)
 
     chosen_match = human_matcher.get_matches("My leg hurts a lot")[0]
 
-    print("SUCCESS")
-    print(f"YOU CHOSE: {chosen_match}")
+    assert chosen_match is not None
 
 
 if __name__ == "__main__":
