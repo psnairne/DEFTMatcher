@@ -17,15 +17,8 @@ def conditions() -> list[str]:
 
 
 @pytest.mark.skipif(os.getenv("CI") == "true", reason="Skipped in CI")
-def test_deft_matcher_conditions_col(
-    conditions,
-):
-
-    config = DeftMatcherConfig(
-        decisive_matchers=[
-            hpo_exact_dm(),
-        ]
-    )
+def test_deft_matcher_conditions_col(conditions):
+    config = DeftMatcherConfig(decisive_matchers=[hpo_exact_dm()])
 
     data = DeftMatcherData(free_texts=conditions, data_name="IDATA")
 
