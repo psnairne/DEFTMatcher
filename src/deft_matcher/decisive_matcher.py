@@ -10,7 +10,13 @@ class DecisiveMatcher:
 
     matcher: Matcher
     ambiguity_resolver: AmbiguityResolver
+    name: str
 
     def __init__(self, matcher: Matcher, ambiguity_resolver: AmbiguityResolver) -> None:
         self.matcher = matcher
         self.ambiguity_resolver = ambiguity_resolver
+        self.name = self._initialise_name()
+
+    def _initialise_name(self) -> str:
+        name = self.matcher.name + "+" + self.ambiguity_resolver.name
+        return name
