@@ -1,6 +1,7 @@
 import json
 import random
 from dataclasses import dataclass, asdict
+from typing import Any
 from uuid import uuid4
 
 import pandas as pd
@@ -68,12 +69,13 @@ class MetaData:
     Holds serialisable info on the set-up and results of a DeftMatcher pipeline.
     """
 
+    data_name: str
     time_started: str
     time_created: str
     decisive_matchers: list[tuple[str, str]]
     matching_uuid: str
     statistics: MetaDataStatistics
-    unique_unmatched_texts: list[str]
+    unique_unmatched_free_texts: list[str]
 
 
 class DeftMatcher:
@@ -183,6 +185,74 @@ class DeftMatcher:
         self.next_matcher = self.get_next_matcher_from_next_index()
         self.next_resolver = self.get_next_resolver_from_next_index()
 
+    # ---------------- LOADING A STATE ----------------
+
+    @classmethod
+    def load_state_from_files(
+        cls,
+        matching_file_path: str,
+        metadata_file_path: str,
+        decisive_matchers: list[DecisiveMatcher],
+    ) -> "DeftMatcher":
+        """
+        Will create a new DeftMatcher object based on the data provided in the matching and metadata_file_path.
+
+        So you can continue where you left off, or make edits.
+        """
+
+        obj: DeftMatcher = cls.__new__(cls)
+
+        obj.time_started = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
+        obj.decisive_matchers = decisive_matchers
+        obj.next_index = 0
+        obj.next_matcher = obj.get_next_matcher_from_next_index()
+        obj.next_resolver = obj.get_next_resolver_from_next_index()
+        obj.logger = obj.initialise_logger()
+
+        # load matchings and free_texts
+        cls.load_matchings_from_file(obj, matching_file_path)
+
+        # load unmatched and data_name
+        cls.load_unmatched_from_file(obj, metadata_file_path)
+
+        obj.logger.info(
+            obj.startup_from_file_log_str(matching_file_path, metadata_file_path)
+        )
+        obj.logger.info(obj.startup_log_str())
+
+        return obj
+
+    @staticmethod
+    def load_matchings_from_file(obj: "DeftMatcher", matching_file_path: str) -> None:
+        matching_df: DataFrame = pd.read_csv(matching_file_path)
+        matching_df.itertuples()
+
+        matchings: dict[str, MatchData] = {}
+
+        for row in matching_df.itertuples(index=False, name="Row"):
+            free_text: str = getattr(row, "FREE_TEXT")
+            curie_id: str = getattr(row, "CURIE_ID")
+            label: str = getattr(row, "LABEL")
+            matcher: str = getattr(row, "MATCHER")
+            resolver: str = getattr(row, "RESOLVER")
+            match_data = MatchData(
+                OntologyClass(curie_id, label),
+                matcher_name=matcher,
+                resolver_name=resolver,
+            )
+            matchings[free_text] = match_data
+
+        obj.matchings = matchings
+        obj.free_texts = list(matchings.keys())
+
+    @staticmethod
+    def load_unmatched_from_file(obj: "DeftMatcher", metadata_file_path: str) -> None:
+        with open(metadata_file_path, "r", encoding="utf-8") as f:
+            metadata: dict[str, Any] = json.load(f)
+
+        obj.data_name = metadata["data_name"]
+        obj.unmatched = set(metadata["unique_unmatched_free_texts"])
+
     # ---------------- OUTPUTTING RESULTS ----------------
 
     def output_results(self, output_dir: Path):
@@ -245,6 +315,7 @@ class DeftMatcher:
         )
 
         metadata = MetaData(
+            data_name=self.data_name,
             time_started=self.time_started,
             time_created=datetime.now().strftime("%d-%m-%Y_%H-%M-%S"),
             decisive_matchers=[
@@ -253,7 +324,7 @@ class DeftMatcher:
             ],
             matching_uuid=matching_uuid,
             statistics=statistics,
-            unique_unmatched_texts=list(self.unmatched),
+            unique_unmatched_free_texts=list(self.unmatched),
         )
 
         return metadata
@@ -298,6 +369,12 @@ class DeftMatcher:
             for dm in self.decisive_matchers
         )
         return header_str + matcher_resolver_str
+
+    @staticmethod
+    def startup_from_file_log_str(
+        matching_file_path: str, metadata_file_path: str
+    ) -> str:
+        return f"DeftMatcher object loaded from {matching_file_path} and {metadata_file_path}"
 
     def log_new_matcher_and_resolver(self, matcher_name: str, resolver_name: str):
         self.logger.info(
