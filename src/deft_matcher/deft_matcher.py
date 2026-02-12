@@ -59,6 +59,7 @@ class MetaDataStatistics:
     number_of_unique_free_texts_matched: int
     number_of_free_texts_unmatched: int
     number_of_unique_free_texts_unmatched: int
+    unique_free_texts_matched_by_decisive_matcher: dict[str, int]
 
 
 @dataclass(frozen=True)
@@ -240,6 +241,7 @@ class DeftMatcher:
                 1 for item in self.free_texts if item not in self.matchings
             ),
             number_of_unique_free_texts_unmatched=len(self.unmatched),
+            unique_free_texts_matched_by_decisive_matcher=self.get_unique_free_texts_by_decisive_matcher(),
         )
 
         metadata = MetaData(
@@ -255,6 +257,19 @@ class DeftMatcher:
         )
 
         return metadata
+
+    def get_unique_free_texts_by_decisive_matcher(self) -> dict[str, int]:
+        count_dict: dict[str, int] = {}
+
+        for match_data in self.matchings.values():
+            decisive_matcher_name = (
+                match_data.matcher_name + "+" + match_data.resolver_name
+            )
+            count_dict[decisive_matcher_name] = (
+                count_dict.get(decisive_matcher_name, 0) + 1
+            )
+
+        return count_dict
 
     # ---------------- LOGGING METHODS ----------------
 
