@@ -34,7 +34,7 @@ class HpoCandidateRetriever:
         self.embedding_metadata_path = embedding_metadata_path
         self.embedding_model_path = embedding_model_path
         self._faiss_index = self._initialise_faiss_index()
-        self._embedding_metadata = self._load_embedding_meta_data()
+        self._embedding_metadata = self._load_embedding_metadata()
         self._emb_model = self._initialise_embeddings_model()
 
     def _initialise_faiss_index(self) -> IndexFlatIP:
@@ -50,7 +50,7 @@ class HpoCandidateRetriever:
         faiss_index.add(emb_matrix)  # type: ignore[arg-type]
         return faiss_index
 
-    def _load_embedding_meta_data(self) -> List[Dict[str, str]]:
+    def _load_embedding_metadata(self) -> List[Dict[str, str]]:
         """
         Output is a list of dictionaries of the form
         {

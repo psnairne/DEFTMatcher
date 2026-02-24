@@ -10,7 +10,7 @@ from deft_matcher.ontology_class import OntologyClass
 def test_fast_hpo_cr_matcher():
     fast_hpo_cr_matcher = FastHPOCRMatcher(
         hpo_obo_path="/Users/patrick/Downloads/HPO_FILES/hp.obo",
-        data_output_dir="/Users/patrick/DEFTMatcher/tests/data",
+        data_output_dir="/Users/patrick/DEFTMatcher/tests/assets/fast_hpo_cr_data",
     )
 
     assert fast_hpo_cr_matcher.get_matches("asthma and shortened stature") == [

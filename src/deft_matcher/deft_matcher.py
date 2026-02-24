@@ -95,6 +95,7 @@ class DeftMatcher:
     free_texts: list[str]
     matchings: dict[str, MatchData]
     unmatched: set[str]
+    uuid: str
     logger: Logger
     data_name: str
 
@@ -107,6 +108,7 @@ class DeftMatcher:
         self.free_texts = data.free_texts
         self.unmatched = set(data.free_texts)
         self.matchings = {}
+        self.uuid = str(uuid4())
         self.logger = self.initialise_logger()
         self.data_name = data.data_name
         self.logger.info(self.startup_log_str())
@@ -134,15 +136,15 @@ class DeftMatcher:
             matcher_name=matcher.name, resolver_name=resolver.name
         )
 
-        self.match(unmatched=self.unmatched, matcher=matcher, resolver=resolver)
+        self.run_decisive_matcher(matcher=matcher, resolver=resolver)
 
-    def match(self, unmatched: set[str], matcher: Matcher, resolver: AmbiguityResolver):
+    def run_decisive_matcher(self, matcher: Matcher, resolver: AmbiguityResolver):
         matcher_name = matcher.name
         resolver_name = resolver.name
 
         solved: list[str] = []
 
-        for free_text in unmatched:
+        for free_text in self.unmatched:
             matches: list[OntologyClass] = matcher.get_matches(free_text)
             resolution: OntologyClass | None = resolver.resolve(matches)
 
@@ -253,20 +255,79 @@ class DeftMatcher:
         obj.data_name = metadata["data_name"]
         obj.unmatched = set(metadata["unique_unmatched_free_texts"])
 
+    # ---------------- EDITING A STATE -------------------
+
+    def rematch(self, free_text: str, replacement_match: OntologyClass) -> None:
+        """
+        This is used to alter a single matching.
+        """
+
+        replacement_match_data: MatchData = MatchData(
+            match=replacement_match, matcher_name="HumanEditor", resolver_name="NA"
+        )
+
+        if free_text in self.matchings:
+            self.matchings[free_text] = replacement_match_data
+        else:
+            raise KeyError(f"{free_text} was not found among the matchings.")
+
+    def bulk_rematch(self, replacement_matchings: dict[str, OntologyClass]):
+        """
+        This is used to alter several matchings.
+        """
+
+        invalid_keys: list[str] = [
+            free_text
+            for free_text in replacement_matchings
+            if free_text not in self.matchings
+        ]
+
+        if invalid_keys:
+            raise KeyError(
+                f"The following free texts were not found among the matchings: {invalid_keys}."
+            )
+
+        for free_text, replacement_match in replacement_matchings.items():
+            self.rematch(free_text, replacement_match)
+
+    def match(self, free_text: str, match: OntologyClass):
+        """
+        Create a single new match.
+        """
+
+        new_match_data: MatchData = MatchData(
+            match=match, matcher_name="HumanEditor", resolver_name="NA"
+        )
+
+        if free_text in self.unmatched:
+            self.matchings[free_text] = new_match_data
+            self.unmatched.remove(free_text)
+        else:
+            raise KeyError(f"{free_text} was not found among the unmatched strings.")
+
+    def bulk_match(self, matchings: dict[str, OntologyClass]):
+        invalid_keys: list[str] = [
+            free_text for free_text in matchings if free_text not in self.unmatched
+        ]
+
+        if invalid_keys:
+            raise KeyError(
+                f"The following free texts were not found among the unmatched strings: {invalid_keys}."
+            )
+
+        for free_text, match in matchings.items():
+            self.match(free_text, match)
+
     # ---------------- OUTPUTTING RESULTS ----------------
 
     def output_results(self, output_dir: Path):
-        uuid: str = str(uuid4())
-
-        results_dir: Path = (
-            output_dir / f"deft_matcher_results_{uuid}_{self.time_started}"
-        )
+        results_dir: Path = output_dir / f"deft_matcher_{self.uuid}"
         results_dir.mkdir(parents=True, exist_ok=False)
 
         self.logger.info(f"Outputting DEFTMatcher results to folder {results_dir}.")
 
         results_df: DataFrame = self.create_results_df()
-        metadata: MetaData = self.create_metadata(uuid)
+        metadata: MetaData = self.create_metadata(self.uuid)
 
         matchings_path: Path = results_dir / "matchings.csv"
         metadata_path: Path = results_dir / "metadata.json"
