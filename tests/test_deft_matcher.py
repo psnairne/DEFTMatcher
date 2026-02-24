@@ -134,7 +134,57 @@ def test_bulk_rematch_fail(example_oc, test_matchings_path, test_metadata_path):
     )
 
     with pytest.raises(KeyError):
-        deft_matcher.bulk_rematch({"osthma": example_oc, "pneumonio": example_oc})
+        deft_matcher.bulk_rematch({"osthma": example_oc, "pneumonia": example_oc})
+
+
+def test_unmatch(test_matchings_path, test_metadata_path):
+    deft_matcher = DeftMatcher.load_state_from_files(
+        matching_file_path=test_matchings_path,
+        metadata_file_path=test_metadata_path,
+        decisive_matchers=[hpo_syn_dm()],
+    )
+
+    deft_matcher.unmatch("asthma")
+
+    assert len(deft_matcher.matchings) == 1
+    assert len(deft_matcher.unmatched) == 3
+    assert "asthma" not in deft_matcher.matchings
+    assert "asthma" in deft_matcher.unmatched
+
+
+def test_unmatch_fail(test_matchings_path, test_metadata_path):
+    deft_matcher = DeftMatcher.load_state_from_files(
+        matching_file_path=test_matchings_path,
+        metadata_file_path=test_metadata_path,
+        decisive_matchers=[hpo_syn_dm()],
+    )
+
+    with pytest.raises(KeyError):
+        deft_matcher.unmatch("osthma")
+
+
+def test_bulk_unmatch(test_matchings_path, test_metadata_path):
+    deft_matcher = DeftMatcher.load_state_from_files(
+        matching_file_path=test_matchings_path,
+        metadata_file_path=test_metadata_path,
+        decisive_matchers=[hpo_syn_dm()],
+    )
+
+    deft_matcher.bulk_unmatch(["asthma", "pneumonia"])
+
+    assert len(deft_matcher.matchings) == 0
+    assert len(deft_matcher.unmatched) == 4
+
+
+def test_bulk_unmatch_fail(test_matchings_path, test_metadata_path):
+    deft_matcher = DeftMatcher.load_state_from_files(
+        matching_file_path=test_matchings_path,
+        metadata_file_path=test_metadata_path,
+        decisive_matchers=[hpo_syn_dm()],
+    )
+
+    with pytest.raises(KeyError):
+        deft_matcher.bulk_unmatch(["asthma", "pneumonio"])
 
 
 def test_match(example_oc, test_matchings_path, test_metadata_path):
@@ -185,4 +235,4 @@ def test_bulk_match_fail(example_oc, test_matchings_path, test_metadata_path):
     )
 
     with pytest.raises(KeyError):
-        deft_matcher.bulk_match({"asthma": example_oc, "pneumonia": example_oc})
+        deft_matcher.bulk_match({"osthma": example_oc, "pneumonia": example_oc})

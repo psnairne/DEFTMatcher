@@ -290,6 +290,30 @@ class DeftMatcher:
         for free_text, replacement_match in replacement_matchings.items():
             self.rematch(free_text, replacement_match)
 
+    def unmatch(self, free_text: str) -> None:
+        """
+        Unmatch a single matching.
+        """
+
+        if free_text in self.matchings:
+            del self.matchings[free_text]
+            self.unmatched.add(free_text)
+        else:
+            raise KeyError(f"{free_text} was not found among the matchings.")
+
+    def bulk_unmatch(self, free_texts: list[str]) -> None:
+        invalid_keys: list[str] = [
+            free_text for free_text in free_texts if free_text not in self.matchings
+        ]
+
+        if invalid_keys:
+            raise KeyError(
+                f"The following free texts were not found among the matchings: {invalid_keys}."
+            )
+
+        for free_text in free_texts:
+            self.unmatch(free_text)
+
     def match(self, free_text: str, match: OntologyClass):
         """
         Create a single new match.
