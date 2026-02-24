@@ -12,7 +12,7 @@ def test_fast_mondo_cr_matcher():
 
     fast_mondo_cr_matcher = FastMONDOCRMatcher(
         mondo_obo_path="/Users/patrick/Downloads/MONDO_FILES/mondo.obo",
-        data_output_dir="/Users/patrick/DEFTMatcher/tests/data",
+        data_output_dir="/Users/patrick/DEFTMatcher/tests/assets/fast_hpo_cr_data",
     )
 
     assert fast_mondo_cr_matcher.get_matches(

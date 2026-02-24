@@ -1,0 +1,3 @@
+FREE_TEXT,CURIE_ID,LABEL,MATCHER,RESOLVER
+pneumonia,HP:0002090,Pneumonia,ExactMatcher(HP),ChooseFirstResolver
+asthma,HP:0002099,Asthma,ExactMatcher(HP),ChooseFirstResolver
