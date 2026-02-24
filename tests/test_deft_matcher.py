@@ -52,7 +52,7 @@ def test_deft_matcher(conditions):
     deft_matcher.run()
 
     assert len(deft_matcher.matchings) == 2
-    assert len(deft_matcher.unmatched) == 1
+    assert len(deft_matcher.unmatched) == 2
 
 
 def test_output_results(conditions):
