@@ -17,6 +17,31 @@ def example_oc() -> OntologyClass:
     return OntologyClass("example_id", "example_label")
 
 
+@pytest.fixture
+def tests_dir() -> Path:
+    return Path(__file__).parent
+
+
+@pytest.fixture
+def assets_dir(tests_dir) -> Path:
+    return tests_dir / "assets"
+
+
+@pytest.fixture
+def test_deft_matcher_output_dir(assets_dir) -> Path:
+    return assets_dir / "test_deft_matcher_output"
+
+
+@pytest.fixture
+def test_matchings_path(test_deft_matcher_output_dir) -> str:
+    return str(test_deft_matcher_output_dir / "matchings.csv")
+
+
+@pytest.fixture
+def test_metadata_path(test_deft_matcher_output_dir) -> str:
+    return str(test_deft_matcher_output_dir / "metadata.json")
+
+
 def test_deft_matcher(conditions):
     config = DeftMatcherConfig(decisive_matchers=[hpo_exact_dm()])
 
@@ -53,10 +78,10 @@ def test_output_results(conditions):
         assert metadata_file.exists()
 
 
-def test_load_from_state():
+def test_load_from_state(test_matchings_path, test_metadata_path):
     deft_matcher = DeftMatcher.load_state_from_files(
-        matching_file_path="/Users/patrick/DEFTMatcher/tests/assets/test_deft_matcher_output/matchings.csv",
-        metadata_file_path="/Users/patrick/DEFTMatcher/tests/assets/test_deft_matcher_output/metadata.json",
+        matching_file_path=test_matchings_path,
+        metadata_file_path=test_metadata_path,
         decisive_matchers=[hpo_syn_dm()],
     )
 
@@ -65,10 +90,10 @@ def test_load_from_state():
     assert len(deft_matcher.decisive_matchers) == 1
 
 
-def test_rematch(example_oc):
+def test_rematch(example_oc, test_matchings_path, test_metadata_path):
     deft_matcher = DeftMatcher.load_state_from_files(
-        matching_file_path="/Users/patrick/DEFTMatcher/tests/assets/test_deft_matcher_output/matchings.csv",
-        metadata_file_path="/Users/patrick/DEFTMatcher/tests/assets/test_deft_matcher_output/metadata.json",
+        matching_file_path=test_matchings_path,
+        metadata_file_path=test_metadata_path,
         decisive_matchers=[hpo_syn_dm()],
     )
 
@@ -77,10 +102,10 @@ def test_rematch(example_oc):
     assert deft_matcher.matchings["asthma"].match == example_oc
 
 
-def test_rematch_fail(example_oc):
+def test_rematch_fail(example_oc, test_matchings_path, test_metadata_path):
     deft_matcher = DeftMatcher.load_state_from_files(
-        matching_file_path="/Users/patrick/DEFTMatcher/tests/assets/test_deft_matcher_output/matchings.csv",
-        metadata_file_path="/Users/patrick/DEFTMatcher/tests/assets/test_deft_matcher_output/metadata.json",
+        matching_file_path=test_matchings_path,
+        metadata_file_path=test_metadata_path,
         decisive_matchers=[hpo_syn_dm()],
     )
 
@@ -88,10 +113,10 @@ def test_rematch_fail(example_oc):
         deft_matcher.rematch("osthma", example_oc)
 
 
-def test_bulk_rematch(example_oc):
+def test_bulk_rematch(example_oc, test_matchings_path, test_metadata_path):
     deft_matcher = DeftMatcher.load_state_from_files(
-        matching_file_path="/Users/patrick/DEFTMatcher/tests/assets/test_deft_matcher_output/matchings.csv",
-        metadata_file_path="/Users/patrick/DEFTMatcher/tests/assets/test_deft_matcher_output/metadata.json",
+        matching_file_path=test_matchings_path,
+        metadata_file_path=test_metadata_path,
         decisive_matchers=[hpo_syn_dm()],
     )
 
@@ -101,10 +126,10 @@ def test_bulk_rematch(example_oc):
     assert deft_matcher.matchings["pneumonia"].match == example_oc
 
 
-def test_bulk_rematch_fail(example_oc):
+def test_bulk_rematch_fail(example_oc, test_matchings_path, test_metadata_path):
     deft_matcher = DeftMatcher.load_state_from_files(
-        matching_file_path="/Users/patrick/DEFTMatcher/tests/assets/test_deft_matcher_output/matchings.csv",
-        metadata_file_path="/Users/patrick/DEFTMatcher/tests/assets/test_deft_matcher_output/metadata.json",
+        matching_file_path=test_matchings_path,
+        metadata_file_path=test_metadata_path,
         decisive_matchers=[hpo_syn_dm()],
     )
 
@@ -112,10 +137,10 @@ def test_bulk_rematch_fail(example_oc):
         deft_matcher.bulk_rematch({"osthma": example_oc, "pneumonio": example_oc})
 
 
-def test_match(example_oc):
+def test_match(example_oc, test_matchings_path, test_metadata_path):
     deft_matcher = DeftMatcher.load_state_from_files(
-        matching_file_path="/Users/patrick/DEFTMatcher/tests/assets/test_deft_matcher_output/matchings.csv",
-        metadata_file_path="/Users/patrick/DEFTMatcher/tests/assets/test_deft_matcher_output/metadata.json",
+        matching_file_path=test_matchings_path,
+        metadata_file_path=test_metadata_path,
         decisive_matchers=[hpo_syn_dm()],
     )
 
@@ -127,10 +152,10 @@ def test_match(example_oc):
     assert "osthma" not in deft_matcher.unmatched
 
 
-def test_match_fail(example_oc):
+def test_match_fail(example_oc, test_matchings_path, test_metadata_path):
     deft_matcher = DeftMatcher.load_state_from_files(
-        matching_file_path="/Users/patrick/DEFTMatcher/tests/assets/test_deft_matcher_output/matchings.csv",
-        metadata_file_path="/Users/patrick/DEFTMatcher/tests/assets/test_deft_matcher_output/metadata.json",
+        matching_file_path=test_matchings_path,
+        metadata_file_path=test_metadata_path,
         decisive_matchers=[hpo_syn_dm()],
     )
 
@@ -138,13 +163,12 @@ def test_match_fail(example_oc):
         deft_matcher.match("asthma", example_oc)
 
 
-def test_bulk_match(example_oc):
+def test_bulk_match(example_oc, test_matchings_path, test_metadata_path):
     deft_matcher = DeftMatcher.load_state_from_files(
-        matching_file_path="/Users/patrick/DEFTMatcher/tests/assets/test_deft_matcher_output/matchings.csv",
-        metadata_file_path="/Users/patrick/DEFTMatcher/tests/assets/test_deft_matcher_output/metadata.json",
+        matching_file_path=test_matchings_path,
+        metadata_file_path=test_metadata_path,
         decisive_matchers=[hpo_syn_dm()],
     )
-
     deft_matcher.bulk_match({"osthma": example_oc, "pneumonio": example_oc})
 
     assert len(deft_matcher.matchings) == 4
@@ -153,10 +177,10 @@ def test_bulk_match(example_oc):
     assert "pneumonio" in deft_matcher.matchings
 
 
-def test_bulk_match_fail(example_oc):
+def test_bulk_match_fail(example_oc, test_matchings_path, test_metadata_path):
     deft_matcher = DeftMatcher.load_state_from_files(
-        matching_file_path="/Users/patrick/DEFTMatcher/tests/assets/test_deft_matcher_output/matchings.csv",
-        metadata_file_path="/Users/patrick/DEFTMatcher/tests/assets/test_deft_matcher_output/metadata.json",
+        matching_file_path=test_matchings_path,
+        metadata_file_path=test_metadata_path,
         decisive_matchers=[hpo_syn_dm()],
     )
 
