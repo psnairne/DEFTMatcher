@@ -306,6 +306,10 @@ class DeftMatcher:
             raise KeyError(f"{free_text} was not found among the unmatched strings.")
 
     def bulk_match(self, matchings: dict[str, OntologyClass]):
+        """
+        Create a several new matches.
+        """
+
         invalid_keys: list[str] = [
             free_text for free_text in matchings if free_text not in self.unmatched
         ]
