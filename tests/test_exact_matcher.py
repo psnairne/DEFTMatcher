@@ -1,6 +1,4 @@
-import hpotk
 import pytest
-from hpotk import OntologyType
 
 from deft_matcher.matchers.exact_matcher import ExactMatcher
 from deft_matcher.ontology_class import OntologyClass
@@ -8,20 +6,22 @@ from deft_matcher.ontology_class import OntologyClass
 
 @pytest.fixture
 def exact_matcher_hpo():
-    store = hpotk.configure_ontology_store()
-    hpo = store.load_hpo(release="v2025-11-24")
-    return ExactMatcher(hpo)
+    return ExactMatcher(
+        "hp",
+        "assets/ontology_obo_files/hp_v2026-02-16.obo",
+        # phenotypic abnormality
+        "HP:0000118",
+    )
 
 
 @pytest.fixture
-def exact_matcher_mondo():
-    store = hpotk.configure_ontology_store()
-    mondo = store.load_ontology(
-        ontology_type=OntologyType.MONDO,
-        release="v2025-12-02",
-        prefixes_of_interest={"MONDO"},
+def exact_matcher_maxo():
+    return ExactMatcher(
+        "maxo",
+        "assets/ontology_obo_files/maxo_v2026-01-15.obo",
+        # medical action
+        "MAXO:0000001",
     )
-    return ExactMatcher(mondo)
 
 
 def test_exact_matcher_hpo_success(exact_matcher_hpo):
@@ -37,14 +37,14 @@ def test_exact_matcher_hpo_fail(exact_matcher_hpo):
     assert len(asthma_matches) == 0
 
 
-def test_exact_matcher_mondo_success(exact_matcher_mondo):
-    marfan_matches = exact_matcher_mondo.get_matches("marfan synDROME")
+def test_exact_matcher_maxo_success(exact_matcher_maxo):
+    bht_matches = exact_matcher_maxo.get_matches("breath hydrOGEN test")
 
-    assert len(marfan_matches) == 1
-    assert marfan_matches[0] == OntologyClass("MONDO:0007947", "Marfan syndrome")
+    assert len(bht_matches) == 1
+    assert bht_matches[0] == OntologyClass("MAXO:0035096", "breath hydrogen test")
 
 
-def test_exact_matcher_mondo_fail(exact_matcher_mondo):
-    marfan_matches = exact_matcher_mondo.get_matches("morfan syndrome")
+def test_exact_matcher_maxo_fail(exact_matcher_maxo):
+    bht_matches = exact_matcher_maxo.get_matches("broth hydrogen test")
 
-    assert len(marfan_matches) == 0
+    assert len(bht_matches) == 0

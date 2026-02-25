@@ -1,6 +1,5 @@
 from dataclasses import dataclass
-
-from hpotk import MinimalTerm
+from oaklib.interfaces import OboGraphInterface
 
 
 @dataclass(frozen=True)
@@ -14,5 +13,6 @@ class OntologyClass:
     label: str
 
     @classmethod
-    def from_minimal_term(cls, minimal_term: "MinimalTerm") -> "OntologyClass":
-        return OntologyClass(minimal_term.identifier.value, minimal_term.name)
+    def from_term_id(cls, term_id: str, ontology: OboGraphInterface) -> "OntologyClass":
+        label: str = ontology.label(term_id)
+        return OntologyClass(term_id, label)

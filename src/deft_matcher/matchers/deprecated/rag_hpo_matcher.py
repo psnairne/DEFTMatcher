@@ -5,10 +5,10 @@ import hpotk
 from hpotk import Ontology
 
 from deft_matcher.matcher import Matcher
-from deft_matcher.matchers.rag_hpo_matcher.candidate_retriever import (
-    HpoCandidateRetriever,
+from deft_matcher.matchers.vector_similarity_matcher.candidate_retriever import (
+    CandidateRetriever,
 )
-from deft_matcher.matchers.rag_hpo_matcher.ollama_client import OllamaClient
+from deft_matcher.matchers.deprecated.ollama_client import OllamaClient
 from deft_matcher.ontology_class import OntologyClass
 
 
@@ -41,7 +41,7 @@ class RagHpoMatcher(Matcher):
         self.embedding_metadata_path = embedding_metadata_path
         self.embedding_model_path = embedding_model_path
         self._client = OllamaClient(model_name=self.model_name)
-        self._hpo_candidate_retriever = HpoCandidateRetriever(
+        self._hpo_candidate_retriever = CandidateRetriever(
             embedded_hpo_path, embedding_metadata_path, embedding_model_path
         )
         # parameters for candidate retrieval
@@ -70,7 +70,7 @@ class RagHpoMatcher(Matcher):
 
     def get_matches(self, free_text: str) -> list[OntologyClass]:
         with open(
-            "/Users/patrick/DEFTMatcher/src/deft_matcher/matchers/rag_hpo_matcher/system_message.txt",
+            "/deft_matcher/matchers/deprecated/system_message.txt",
             "r",
             encoding="utf-8",
         ) as f:

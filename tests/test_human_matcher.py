@@ -1,6 +1,4 @@
-import hpotk
 import pytest
-from hpotk import OntologyStore, Ontology
 
 from deft_matcher.matcher import Matcher
 from deft_matcher.matchers.human_matcher.human_matcher import HumanMatcher
@@ -15,24 +13,19 @@ from deft_matcher.ontology_class import OntologyClass
 
 
 @pytest.fixture
-def store() -> OntologyStore:
-    return hpotk.configure_ontology_store()
+def synonym_matcher_hpo():
+    return SynonymMatcher(
+        "hp",
+        "assets/ontology_obo_files/hp_v2026-02-16.obo",
+        # phenotypic abnormality
+        "HP:0000118",
+    )
 
 
 @pytest.fixture
-def hpo(store) -> Ontology:
-    return store.load_hpo(release="v2025-11-24")
-
-
-@pytest.fixture
-def hpo_syn_matcher(hpo) -> SynonymMatcher:
-    return SynonymMatcher(ontology=hpo)
-
-
-@pytest.fixture
-def human_matcher(hpo_syn_matcher):
+def human_matcher(synonym_matcher_hpo):
     interface: UserInterface = MockInterface()
-    candidate_retriever: Matcher = hpo_syn_matcher
+    candidate_retriever: Matcher = synonym_matcher_hpo
     return HumanMatcher(interface, candidate_retriever)
 
 

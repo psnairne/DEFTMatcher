@@ -9,13 +9,13 @@ from deft_matcher.matchers.exact_matcher import ExactMatcher
 from deft_matcher.matchers.fast_hpo_cr_matcher import FastHPOCRMatcher
 from deft_matcher.matchers.fast_mondo_cr_matcher import FastMONDOCRMatcher
 from deft_matcher.matchers.human_matcher.human_matcher import HumanMatcher
-from deft_matcher.matchers.human_matcher.user_interfaces.console_interface_hpo import (
-    ConsoleInterfaceHpo,
+from deft_matcher.matchers.human_matcher.user_interfaces.console_interface import (
+    ConsoleInterface,
 )
 from deft_matcher.matchers.null_matcher import NullMatcher
-from deft_matcher.matchers.rag_hpo_matcher.rag_hpo_matcher import RagHpoMatcher
+from deft_matcher.matchers.deprecated.rag_hpo_matcher import RagHpoMatcher
 from deft_matcher.matchers.synonym_matcher import SynonymMatcher
-from deft_matcher.matchers.vector_similarity_matcher import HpoVectorSimilarityMatcher
+from deft_matcher.matchers.vector_similarity_matcher import VectorSimilarityMatcher
 
 # ---PATHS---
 
@@ -33,15 +33,15 @@ def data_output_dir() -> str:
 
 
 def embedded_hpo_path() -> str:
-    return "/Users/patrick/DEFTMatcher/src/deft_matcher/matchers/rag_hpo_matcher/data/hpo_embedded.npz"
+    return "/Users/patrick/DEFTMatcher/src/deft_matcher/matchers/vector_similarity_matcher/data/hpo_embedded.npz"
 
 
 def embedding_metadata_path() -> str:
-    return "/Users/patrick/DEFTMatcher/src/deft_matcher/matchers/rag_hpo_matcher/data/hpo_meta.json"
+    return "/Users/patrick/DEFTMatcher/src/deft_matcher/matchers/vector_similarity_matcher/data/hpo_meta.json"
 
 
 def embedding_model_path() -> str:
-    return "/Users/patrick/DEFTMatcher/src/deft_matcher/matchers/rag_hpo_matcher/sbert_model"
+    return "/Users/patrick/DEFTMatcher/src/deft_matcher/matchers/vector_similarity_matcher/sbert_model"
 
 
 # ---ONTOLOGIES---
@@ -106,9 +106,9 @@ def rag_hpo_matcher() -> RagHpoMatcher:
     )
 
 
-def vector_similarity_matcher() -> HpoVectorSimilarityMatcher:
-    return HpoVectorSimilarityMatcher(
-        embedded_hpo_path=embedded_hpo_path(),
+def vector_similarity_matcher() -> VectorSimilarityMatcher:
+    return VectorSimilarityMatcher(
+        embedding_path=embedded_hpo_path(),
         embedding_metadata_path=embedding_metadata_path(),
         embedding_model_path=embedding_model_path(),
         similarity_threshold=0.75,
@@ -116,9 +116,9 @@ def vector_similarity_matcher() -> HpoVectorSimilarityMatcher:
     )
 
 
-def vector_similarity_matcher_five_candidates() -> HpoVectorSimilarityMatcher:
-    return HpoVectorSimilarityMatcher(
-        embedded_hpo_path=embedded_hpo_path(),
+def vector_similarity_matcher_five_candidates() -> VectorSimilarityMatcher:
+    return VectorSimilarityMatcher(
+        embedding_path=embedded_hpo_path(),
         embedding_metadata_path=embedding_metadata_path(),
         embedding_model_path=embedding_model_path(),
         similarity_threshold=0,
@@ -128,7 +128,7 @@ def vector_similarity_matcher_five_candidates() -> HpoVectorSimilarityMatcher:
 
 def human_matcher() -> HumanMatcher:
     return HumanMatcher(
-        ConsoleInterfaceHpo(hpo_version="v2025-11-24"),
+        ConsoleInterface(hpo_version="v2025-11-24"),
         vector_similarity_matcher_five_candidates(),
     )
 

@@ -1,7 +1,6 @@
 import logging
 from pathlib import Path
 
-import hpotk
 import pytest
 import pandas as pd
 import os
@@ -15,104 +14,100 @@ from deft_matcher.matchers.exact_matcher import ExactMatcher
 from deft_matcher.matchers.fast_hpo_cr_matcher import FastHPOCRMatcher
 from deft_matcher.matchers.fast_mondo_cr_matcher import FastMONDOCRMatcher
 from deft_matcher.matchers.null_matcher import NullMatcher
-from deft_matcher.matchers.rag_hpo_matcher.rag_hpo_matcher import RagHpoMatcher
-from deft_matcher.matchers.vector_similarity_matcher import HpoVectorSimilarityMatcher
 from deft_matcher.matchers.synonym_matcher import SynonymMatcher
-
-
-@pytest.fixture
-def store() -> OntologyStore:
-    return hpotk.configure_ontology_store()
-
-
-@pytest.fixture
-def hpo(store) -> Ontology:
-    return store.load_hpo(release="v2025-11-24")
-
-
-@pytest.fixture
-def mondo(store) -> Ontology:
-    # silences noisy hpotk comments
-    logging.getLogger("hpotk").setLevel(logging.ERROR)
-
-    return store.load_ontology(
-        ontology_type=OntologyType.MONDO,
-        release="v2025-12-02",
-        prefixes_of_interest={"MONDO"},
-    )
+from deft_matcher.matchers.vector_similarity_matcher.vector_similarity_matcher import (
+    VectorSimilarityMatcher,
+)
 
 
 @pytest.fixture
 def hpo_obo_path() -> str:
-    return "/Users/patrick/Downloads/HPO_FILES/hp.obo"
+    return (
+        "/Users/patrick/DEFTMatcher/tests/assets/ontology_obo_files/hp_v2026-02-16.obo"
+    )
 
 
 @pytest.fixture
 def mondo_obo_path() -> str:
-    return "/Users/patrick/Downloads/MONDO_FILES/mondo.obo"
+    return "/Users/patrick/DEFTMatcher/tests/assets/ontology_obo_files/mondo_v2026-02-03.obo"
 
 
 @pytest.fixture
 def data_output_dir() -> str:
-    return "/Users/patrick/DEFTMatcher/tests/data"
+    return "/Users/patrick/DEFTMatcher/tests/assets/fast_hpo_cr_data"
 
 
 @pytest.fixture
-def hpo_exact_matcher(hpo) -> ExactMatcher:
-    return ExactMatcher(ontology=hpo)
+def hpo_exact_matcher(hpo_obo_path):
+    return ExactMatcher(
+        "hp",
+        hpo_obo_path,
+        # phenotypic abnormality
+        "HP:0000118",
+    )
 
 
 @pytest.fixture
-def hpo_syn_matcher(hpo) -> SynonymMatcher:
-    return SynonymMatcher(ontology=hpo)
+def hpo_syn_matcher(hpo_obo_path):
+    return SynonymMatcher(
+        "hp",
+        hpo_obo_path,
+        # phenotypic abnormality
+        "HP:0000118",
+    )
 
 
 @pytest.fixture
-def mondo_exact_matcher(mondo) -> ExactMatcher:
-    return ExactMatcher(ontology=mondo)
+def mondo_exact_matcher(mondo_obo_path):
+    return ExactMatcher(
+        "mondo",
+        mondo_obo_path,
+        # disease
+        "HP:0000001",
+    )
 
 
 @pytest.fixture
-def mondo_syn_matcher(mondo) -> SynonymMatcher:
-    return SynonymMatcher(ontology=mondo)
+def mondo_syn_matcher(mondo_obo_path):
+    return SynonymMatcher(
+        "mondo",
+        mondo_obo_path,
+        # disease
+        "MONDO:0000001",
+    )
 
 
 @pytest.fixture
 def fast_hpo_cr_matcher(hpo_obo_path, data_output_dir) -> FastHPOCRMatcher:
-    return FastHPOCRMatcher(hpo_obo_path=hpo_obo_path, data_output_dir=data_output_dir)
+    return FastHPOCRMatcher(
+        hpo_obo_path=hpo_obo_path,
+        data_output_dir=data_output_dir,
+        root_term="HP:0000001",
+    )
 
 
 @pytest.fixture
 def fast_mondo_cr_matcher(mondo_obo_path, data_output_dir) -> FastMONDOCRMatcher:
     return FastMONDOCRMatcher(
-        mondo_obo_path=mondo_obo_path, data_output_dir=data_output_dir
+        mondo_obo_path=mondo_obo_path,
+        data_output_dir=data_output_dir,
+        root_term="MONDO:0000001",
     )
 
 
 @pytest.fixture
-def rag_hpo_matcher() -> RagHpoMatcher:
-    model_name = "llama3.2"
-    embedded_hpo_path = "/Users/patrick/DEFTMatcher/src/deft_matcher/matchers/rag_hpo_matcher/data/hpo_embedded.npz"
-    embedding_metadata_path = "/Users/patrick/DEFTMatcher/src/deft_matcher/matchers/rag_hpo_matcher/data/hpo_meta.json"
-    embedding_model_path = "/Users/patrick/DEFTMatcher/src/deft_matcher/matchers/rag_hpo_matcher/sbert_model"
-    return RagHpoMatcher(
-        model_name=model_name,
-        embedded_hpo_path=embedded_hpo_path,
-        embedding_metadata_path=embedding_metadata_path,
-        embedding_model_path=embedding_model_path,
-    )
-
-
-@pytest.fixture
-def vector_similarity_matcher() -> HpoVectorSimilarityMatcher:
-    embedded_hpo_path = "/Users/patrick/DEFTMatcher/src/deft_matcher/matchers/rag_hpo_matcher/data/hpo_embedded.npz"
-    embedding_metadata_path = "/Users/patrick/DEFTMatcher/src/deft_matcher/matchers/rag_hpo_matcher/data/hpo_meta.json"
-    embedding_model_path = "/Users/patrick/DEFTMatcher/src/deft_matcher/matchers/rag_hpo_matcher/sbert_model"
-    return HpoVectorSimilarityMatcher(
-        embedded_hpo_path=embedded_hpo_path,
+def vector_similarity_matcher(hpo_obo_path) -> VectorSimilarityMatcher:
+    embedded_hpo_path = "/Users/patrick/DEFTMatcher/tests/assets/vector_similarity_matcher_data/data/hpo_embedded.npz"
+    embedding_metadata_path = "/Users/patrick/DEFTMatcher/tests/assets/vector_similarity_matcher_data/data/hpo_meta.json"
+    embedding_model_path = "/Users/patrick/DEFTMatcher/tests/assets/vector_similarity_matcher_data/sbert_model"
+    return VectorSimilarityMatcher(
+        embedding_path=embedded_hpo_path,
         embedding_metadata_path=embedding_metadata_path,
         embedding_model_path=embedding_model_path,
         similarity_threshold=0.75,
+        ontology_obo_path=hpo_obo_path,
+        ontology_prefix="hp",
+        root_term="HP:0000001",
     )
 
 
