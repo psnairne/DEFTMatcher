@@ -140,7 +140,6 @@ def test_deft_matcher_conditions_col(
     mondo_syn_matcher,
     fast_hpo_cr_matcher,
     fast_mondo_cr_matcher,
-    vector_similarity_matcher,
     null_matcher,
     choose_first,
 ):
@@ -166,10 +165,6 @@ def test_deft_matcher_conditions_col(
         matcher=fast_mondo_cr_matcher, ambiguity_resolver=choose_first
     )
 
-    vector_similarity_dm = DecisiveMatcher(
-        matcher=vector_similarity_matcher, ambiguity_resolver=choose_first
-    )
-
     null_dm = DecisiveMatcher(matcher=null_matcher, ambiguity_resolver=choose_first)
 
     config = DeftMatcherConfig(
@@ -180,7 +175,6 @@ def test_deft_matcher_conditions_col(
             mondo_exact_dm,
             mondo_syn_dm,
             fast_mondo_cr_dm,
-            vector_similarity_dm,
             null_dm,
         ]
     )
