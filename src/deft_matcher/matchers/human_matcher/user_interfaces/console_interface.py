@@ -141,7 +141,6 @@ class ConsoleInterface(UserInterface):
             sorted_ancestors = sorted(ancestors, reverse=True)
 
             for ancestor in sorted_ancestors:
-
                 if not ancestor.startswith(self.ontology_prefix.upper()):
                     continue
 
