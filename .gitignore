@@ -197,5 +197,5 @@ cython_debug/
 .idea/
 
 _version.py
-/src/deft_matcher/matchers/rag_hpo_matcher/data/
-/src/deft_matcher/matchers/rag_hpo_matcher/sbert_model/
+/tests/assets/vector_similarity_matcher_data/data/
+/tests/assets/vector_similarity_matcher_data/sbert_model/

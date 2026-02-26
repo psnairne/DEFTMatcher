@@ -1,47 +1,74 @@
-import hpotk
-from hpotk import Ontology
+from typing import Iterable
 
+from oaklib import get_adapter
+from oaklib.datamodels.vocabulary import IS_A
+from oaklib.interfaces import OboGraphInterface
+from oaklib.interfaces.obograph_interface import GraphTraversalMethod
+
+from deft_matcher.matchers.utils import validate_file_path_has_version_and_return
 from deft_matcher.ontology_class import OntologyClass
 from deft_matcher.matchers.human_matcher.user_interfaces.user_interface import (
     UserInterface,
 )
 
 
-class ConsoleInterfaceHpo(UserInterface):
+class ConsoleInterface(UserInterface):
     """
     An interface which uses the console to interact with the user.
-    Currently this is only designed to work with HPO.
     """
 
+    ontology_prefix: str
+    ontology_obo_path: str
+    root_term: str
+    ontology_version: str
     interface: UserInterface
-    hpo_version: str
-    _id_to_term_hpo: dict[str, OntologyClass]
-    _label_to_term_hpo: dict[str, OntologyClass]
+    _id_to_term: dict[str, OntologyClass]
+    _label_to_term: dict[str, OntologyClass]
 
-    def __init__(self, hpo_version: str) -> None:
-        self.hpo_version = hpo_version
-        self._hpo = self._initialise_hpo()
-        self._id_to_term_hpo = self._initialise_id_to_term_hpo()
-        self._label_to_term_hpo = self._initialise_label_to_term_hpo()
+    def __init__(
+        self, ontology_prefix: str, ontology_obo_path: str, root_term: str
+    ) -> None:
+        self.ontology_prefix = ontology_prefix
+        self.ontology_obo_path = ontology_obo_path
+        self.root_term = root_term
+        self.ontology_version = validate_file_path_has_version_and_return(
+            self.ontology_obo_path
+        )
+        self._oak_ontology_str = self._initialise_oak_ontology_str()
+        self._ontology = self._initialise_ontology()
+        self._id_to_term = self._initialise_id_to_term()
+        self._label_to_term = self._initialise_label_to_term()
 
     @property
     def name(self) -> str:
-        return "ConsoleInterfaceHpo"
+        return f"ConsoleInterface({self.ontology_prefix.upper()})"
 
-    def _initialise_hpo(self) -> Ontology:
-        store = hpotk.configure_ontology_store()
-        return store.load_hpo(release=self.hpo_version)
+    def _initialise_oak_ontology_str(self) -> str:
+        return "simpleobo:" + self.ontology_obo_path
 
-    def _initialise_id_to_term_hpo(self) -> dict[str, OntologyClass]:
-        return {
-            term.identifier.value: OntologyClass.from_minimal_term(term)
-            for term in self._hpo.terms
-        }
+    def _initialise_ontology(self) -> OboGraphInterface:
+        return get_adapter(self._oak_ontology_str)
 
-    def _initialise_label_to_term_hpo(self) -> dict[str, OntologyClass]:
-        return {
-            term.name: OntologyClass.from_minimal_term(term) for term in self._hpo.terms
-        }
+    def _initialise_id_to_term(self) -> dict[str, OntologyClass]:
+        all_term_ids: Iterable[str] = self._ontology.descendants(
+            self.root_term, predicates=[IS_A]
+        )
+        id_to_term: dict[str, OntologyClass] = dict()
+        for term_id in all_term_ids:
+            id_to_term[term_id] = OntologyClass.from_term_id(term_id, self._ontology)
+        return id_to_term
+
+    def _initialise_label_to_term(self) -> dict[str, OntologyClass]:
+        all_term_ids: Iterable[str] = self._ontology.descendants(
+            self.root_term, predicates=[IS_A]
+        )
+        label_to_term: dict[str, OntologyClass] = dict()
+        for term_id in all_term_ids:
+            label: str = self._ontology.label(term_id)
+            label_to_term[label.lower()] = OntologyClass.from_term_id(
+                term_id, self._ontology
+            )
+        return label_to_term
 
     def user_selection(
         self, free_text: str, candidates: list[OntologyClass]
@@ -60,12 +87,12 @@ class ConsoleInterfaceHpo(UserInterface):
             if choice.lower() == "x":
                 break
 
-            if choice.lower().startswith("hp:"):
-                if choice in self._id_to_term_hpo:
-                    selected_term = self._id_to_term_hpo[choice]
+            if choice.lower().startswith(f"{self.ontology_prefix.lower()}:"):
+                if choice in self._id_to_term:
+                    selected_term = self._id_to_term[choice]
                     break
                 else:
-                    self.print_invalid_hpo_input(choice)
+                    self.print_invalid_id_input(choice)
                     continue
 
             if self.is_candidate_input(choice) and candidates:
@@ -96,23 +123,32 @@ class ConsoleInterfaceHpo(UserInterface):
         if not candidates:
             return {}
 
-        ancestors_to_ignore: set[OntologyClass] = {
-            self._label_to_term_hpo["Phenotypic abnormality"],
-            self._label_to_term_hpo["All"],
-        }
-        seen_ancestors: set[OntologyClass] = set()
+        ancestors_to_ignore = set(self._ontology.ancestors(self.root_term))
+
+        seen_ancestors: set[OntologyClass] = set(candidates)
+
         candidate_ancestor_encoding: dict[str, OntologyClass] = {}
         for i, candidate in enumerate(candidates, start=1):
             candidate_ancestor_encoding[str(i)] = candidate
             j: int = 0  # counts how many ancestors for this candidate we are displaying
 
-            for ancestor in self._hpo.graph.get_ancestors(candidate.curie_id):
-                ancestor_oc = OntologyClass.from_minimal_term(
-                    self._hpo.get_term(ancestor)
-                )
-                if ancestor_oc in seen_ancestors:
+            ancestors = self._ontology.ancestors(
+                start_curies=candidate.curie_id,
+                reflexive=False,
+                method=GraphTraversalMethod.HOP,
+            )
+
+            sorted_ancestors = sorted(ancestors, reverse=True)
+
+            for ancestor in sorted_ancestors:
+                if not ancestor.startswith(self.ontology_prefix.upper()):
                     continue
-                if ancestor_oc in ancestors_to_ignore:
+
+                if ancestor in ancestors_to_ignore:
+                    continue
+
+                ancestor_oc = OntologyClass.from_term_id(ancestor, self._ontology)
+                if ancestor_oc in seen_ancestors:
                     continue
                 else:
                     j += 1
@@ -160,9 +196,9 @@ class ConsoleInterfaceHpo(UserInterface):
                 "---------------------------------------------------------------------------------"
             )
 
-    def print_invalid_hpo_input(self, choice: str):
+    def print_invalid_id_input(self, choice: str):
         print(
-            f"Inputted HPO ID '{choice}' was not valid. Please enter a valid HPO ID from release {self.hpo_version}."
+            f"Inputted ID '{choice}' was not valid. Please enter a valid ID from ontology {self.ontology_prefix.upper()} release {self.ontology_version} with root {self._ontology.label(self.root_term)}."
         )
 
     @staticmethod
@@ -184,25 +220,23 @@ class ConsoleInterfaceHpo(UserInterface):
             f"Candidate selection {choice} was invalid. Please choose one of the options: {options_str}."
         )
 
-    @staticmethod
-    def request_input(candidates: list[OntologyClass]) -> str:
+    def request_input(self, candidates: list[OntologyClass]) -> str:
         if candidates:
             choice = input(
-                "Choose a candidate or a HPO ID of the form 'HP:1234567' (or 'x' for none): "
+                f"Choose a candidate or an ontology ID of the form '{self.ontology_prefix.upper()}:1234567' (or 'x' for none): "
             ).strip()
         else:
             choice = input(
-                "Choose a HPO ID of the form 'HP:1234567' (or 'x' for none): "
+                "Choose an ontology ID of the form 'PREFIX:1234567' (or 'x' for none): "
             ).strip()
         return choice
 
-    @staticmethod
-    def print_invalid_input(candidates: list[OntologyClass]):
+    def print_invalid_input(self, candidates: list[OntologyClass]):
         if candidates:
             print(
-                "Choice was not valid. Please choose a candidate, a HPO ID of the form 'HP:1234567', or 'x' for none."
+                f"Choice was not valid. Please choose a candidate, an ontology ID of the form '{self.ontology_prefix.upper()}:1234567', or 'x' for none."
             )
         else:
             print(
-                "Choice was not valid. Please choose a HPO ID of the form 'HP:1234567', or 'x' for none."
+                f"Choice was not valid. Please choose an ontology ID of the form '{self.ontology_prefix.upper()}:1234567', or 'x' for none."
             )

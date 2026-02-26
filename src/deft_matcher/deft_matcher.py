@@ -1,6 +1,7 @@
 import json
 import random
 from dataclasses import dataclass, asdict
+from typing import Any
 from uuid import uuid4
 
 import pandas as pd
@@ -68,12 +69,13 @@ class MetaData:
     Holds serialisable info on the set-up and results of a DeftMatcher pipeline.
     """
 
+    data_name: str
     time_started: str
     time_created: str
     decisive_matchers: list[tuple[str, str]]
     matching_uuid: str
     statistics: MetaDataStatistics
-    unique_unmatched_texts: list[str]
+    unique_unmatched_free_texts: list[str]
 
 
 class DeftMatcher:
@@ -93,6 +95,7 @@ class DeftMatcher:
     free_texts: list[str]
     matchings: dict[str, MatchData]
     unmatched: set[str]
+    uuid: str
     logger: Logger
     data_name: str
 
@@ -105,6 +108,7 @@ class DeftMatcher:
         self.free_texts = data.free_texts
         self.unmatched = set(data.free_texts)
         self.matchings = {}
+        self.uuid = str(uuid4())
         self.logger = self.initialise_logger()
         self.data_name = data.data_name
         self.logger.info(self.startup_log_str())
@@ -132,15 +136,15 @@ class DeftMatcher:
             matcher_name=matcher.name, resolver_name=resolver.name
         )
 
-        self.match(unmatched=self.unmatched, matcher=matcher, resolver=resolver)
+        self.run_decisive_matcher(matcher=matcher, resolver=resolver)
 
-    def match(self, unmatched: set[str], matcher: Matcher, resolver: AmbiguityResolver):
+    def run_decisive_matcher(self, matcher: Matcher, resolver: AmbiguityResolver):
         matcher_name = matcher.name
         resolver_name = resolver.name
 
         solved: list[str] = []
 
-        for free_text in unmatched:
+        for free_text in self.unmatched:
             matches: list[OntologyClass] = matcher.get_matches(free_text)
             resolution: OntologyClass | None = resolver.resolve(matches)
 
@@ -183,20 +187,175 @@ class DeftMatcher:
         self.next_matcher = self.get_next_matcher_from_next_index()
         self.next_resolver = self.get_next_resolver_from_next_index()
 
+    # ---------------- LOADING A STATE ----------------
+
+    @classmethod
+    def load_state_from_files(
+        cls,
+        matching_file_path: str,
+        metadata_file_path: str,
+        decisive_matchers: list[DecisiveMatcher],
+    ) -> "DeftMatcher":
+        """
+        Will create a new DeftMatcher object based on the data provided in the matching and metadata_file_path.
+
+        So you can continue where you left off, or make edits.
+        """
+
+        obj: DeftMatcher = cls.__new__(cls)
+
+        obj.time_started = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
+        obj.decisive_matchers = decisive_matchers
+        obj.next_index = 0
+        obj.next_matcher = obj.get_next_matcher_from_next_index()
+        obj.next_resolver = obj.get_next_resolver_from_next_index()
+        obj.logger = obj.initialise_logger()
+
+        # load matchings and free_texts
+        cls.load_matchings_from_file(obj, matching_file_path)
+
+        # load unmatched and data_name
+        cls.load_unmatched_from_file(obj, metadata_file_path)
+
+        obj.logger.info(
+            obj.startup_from_file_log_str(matching_file_path, metadata_file_path)
+        )
+        obj.logger.info(obj.startup_log_str())
+
+        return obj
+
+    @staticmethod
+    def load_matchings_from_file(obj: "DeftMatcher", matching_file_path: str) -> None:
+        matching_df: DataFrame = pd.read_csv(matching_file_path)
+        matching_df.itertuples()
+
+        matchings: dict[str, MatchData] = {}
+
+        for row in matching_df.itertuples(index=False, name="Row"):
+            free_text: str = getattr(row, "FREE_TEXT")
+            curie_id: str = getattr(row, "CURIE_ID")
+            label: str = getattr(row, "LABEL")
+            matcher: str = getattr(row, "MATCHER")
+            resolver: str = getattr(row, "RESOLVER")
+            match_data = MatchData(
+                OntologyClass(curie_id, label),
+                matcher_name=matcher,
+                resolver_name=resolver,
+            )
+            matchings[free_text] = match_data
+
+        obj.matchings = matchings
+        obj.free_texts = list(matchings.keys())
+
+    @staticmethod
+    def load_unmatched_from_file(obj: "DeftMatcher", metadata_file_path: str) -> None:
+        with open(metadata_file_path, "r", encoding="utf-8") as f:
+            metadata: dict[str, Any] = json.load(f)
+
+        obj.data_name = metadata["data_name"]
+        obj.unmatched = set(metadata["unique_unmatched_free_texts"])
+
+    # ---------------- EDITING A STATE -------------------
+
+    def rematch(self, free_text: str, replacement_match: OntologyClass) -> None:
+        """
+        This is used to alter a single matching.
+        """
+
+        replacement_match_data: MatchData = MatchData(
+            match=replacement_match, matcher_name="HumanEditor", resolver_name="NA"
+        )
+
+        if free_text in self.matchings:
+            self.matchings[free_text] = replacement_match_data
+        else:
+            raise KeyError(f"{free_text} was not found among the matchings.")
+
+    def bulk_rematch(self, replacement_matchings: dict[str, OntologyClass]):
+        """
+        This is used to alter several matchings.
+        """
+
+        invalid_keys: list[str] = [
+            free_text
+            for free_text in replacement_matchings
+            if free_text not in self.matchings
+        ]
+
+        if invalid_keys:
+            raise KeyError(
+                f"The following free texts were not found among the matchings: {invalid_keys}."
+            )
+
+        for free_text, replacement_match in replacement_matchings.items():
+            self.rematch(free_text, replacement_match)
+
+    def unmatch(self, free_text: str) -> None:
+        """
+        Unmatch a single matching.
+        """
+
+        if free_text in self.matchings:
+            del self.matchings[free_text]
+            self.unmatched.add(free_text)
+        else:
+            raise KeyError(f"{free_text} was not found among the matchings.")
+
+    def bulk_unmatch(self, free_texts: list[str]) -> None:
+        invalid_keys: list[str] = [
+            free_text for free_text in free_texts if free_text not in self.matchings
+        ]
+
+        if invalid_keys:
+            raise KeyError(
+                f"The following free texts were not found among the matchings: {invalid_keys}."
+            )
+
+        for free_text in free_texts:
+            self.unmatch(free_text)
+
+    def match(self, free_text: str, match: OntologyClass):
+        """
+        Create a single new match.
+        """
+
+        new_match_data: MatchData = MatchData(
+            match=match, matcher_name="HumanEditor", resolver_name="NA"
+        )
+
+        if free_text in self.unmatched:
+            self.matchings[free_text] = new_match_data
+            self.unmatched.remove(free_text)
+        else:
+            raise KeyError(f"{free_text} was not found among the unmatched strings.")
+
+    def bulk_match(self, matchings: dict[str, OntologyClass]):
+        """
+        Create a several new matches.
+        """
+
+        invalid_keys: list[str] = [
+            free_text for free_text in matchings if free_text not in self.unmatched
+        ]
+
+        if invalid_keys:
+            raise KeyError(
+                f"The following free texts were not found among the unmatched strings: {invalid_keys}."
+            )
+
+        for free_text, match in matchings.items():
+            self.match(free_text, match)
+
     # ---------------- OUTPUTTING RESULTS ----------------
 
     def output_results(self, output_dir: Path):
-        uuid: str = str(uuid4())
-
-        results_dir: Path = (
-            output_dir / f"deft_matcher_results_{uuid}_{self.time_started}"
-        )
+        results_dir: Path = output_dir / f"deft_matcher_{self.uuid}"
         results_dir.mkdir(parents=True, exist_ok=False)
 
         self.logger.info(f"Outputting DEFTMatcher results to folder {results_dir}.")
 
         results_df: DataFrame = self.create_results_df()
-        metadata: MetaData = self.create_metadata(uuid)
+        metadata: MetaData = self.create_metadata(self.uuid)
 
         matchings_path: Path = results_dir / "matchings.csv"
         metadata_path: Path = results_dir / "metadata.json"
@@ -245,6 +404,7 @@ class DeftMatcher:
         )
 
         metadata = MetaData(
+            data_name=self.data_name,
             time_started=self.time_started,
             time_created=datetime.now().strftime("%d-%m-%Y_%H-%M-%S"),
             decisive_matchers=[
@@ -253,7 +413,7 @@ class DeftMatcher:
             ],
             matching_uuid=matching_uuid,
             statistics=statistics,
-            unique_unmatched_texts=list(self.unmatched),
+            unique_unmatched_free_texts=list(self.unmatched),
         )
 
         return metadata
@@ -298,6 +458,12 @@ class DeftMatcher:
             for dm in self.decisive_matchers
         )
         return header_str + matcher_resolver_str
+
+    @staticmethod
+    def startup_from_file_log_str(
+        matching_file_path: str, metadata_file_path: str
+    ) -> str:
+        return f"DeftMatcher object loaded from {matching_file_path} and {metadata_file_path}"
 
     def log_new_matcher_and_resolver(self, matcher_name: str, resolver_name: str):
         self.logger.info(
