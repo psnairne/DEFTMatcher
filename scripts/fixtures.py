@@ -19,6 +19,7 @@ from scripts.utils import get_project_root_str
 
 
 def hpo_obo_path() -> str:
+    print(get_project_root_str())
     return (
         get_project_root_str() + "/tests/assets/ontology_obo_files/hp_v2026-02-16.obo"
     )
