@@ -12,6 +12,7 @@ from deft_matcher.matchers.synonym_matcher import SynonymMatcher
 from deft_matcher.matchers.vector_similarity_matcher.vector_similarity_matcher import (
     VectorSimilarityMatcher,
 )
+from scripts.utils import get_project_root_str
 
 
 # ---PATHS---
@@ -19,32 +20,46 @@ from deft_matcher.matchers.vector_similarity_matcher.vector_similarity_matcher i
 
 def hpo_obo_path() -> str:
     return (
-        "/Users/patrick/DEFTMatcher/tests/assets/ontology_obo_files/hp_v2026-02-16.obo"
+        get_project_root_str() + "/tests/assets/ontology_obo_files/hp_v2026-02-16.obo"
     )
 
 
 def mondo_obo_path() -> str:
-    return "/Users/patrick/DEFTMatcher/tests/assets/ontology_obo_files/mondo_v2026-02-03.obo"
+    return (
+        get_project_root_str()
+        + "/tests/assets/ontology_obo_files/mondo_v2026-02-03.obo"
+    )
 
 
 def maxo_obo_path() -> str:
-    return "assets/ontology_obo_files/maxo_v2026-01-15.obo"
+    return (
+        get_project_root_str() + "/tests/assets/ontology_obo_files/maxo_v2026-01-15.obo"
+    )
 
 
 def fast_hpo_cr_asset_dir() -> str:
-    return "/Users/patrick/DEFTMatcher/tests/assets/fast_hpo_cr_data"
+    return get_project_root_str() + "/tests/assets/fast_hpo_cr_data"
 
 
 def embedded_hpo_path() -> str:
-    return "/Users/patrick/DEFTMatcher/tests/assets/vector_similarity_matcher_data/data/hpo_embedded.npz"
+    return (
+        get_project_root_str()
+        + "/tests/assets/vector_similarity_matcher_data/data/hpo_embedded.npz"
+    )
 
 
 def embedding_metadata_path() -> str:
-    return "/Users/patrick/DEFTMatcher/tests/assets/vector_similarity_matcher_data/data/hpo_meta.json"
+    return (
+        get_project_root_str()
+        + "/tests/assets/vector_similarity_matcher_data/data/hpo_meta.json"
+    )
 
 
 def embedding_model_path() -> str:
-    return "/Users/patrick/DEFTMatcher/tests/assets/vector_similarity_matcher_data/sbert_model"
+    return (
+        get_project_root_str()
+        + "/tests/assets/vector_similarity_matcher_data/sbert_model"
+    )
 
 
 # ---MATCHERS---
