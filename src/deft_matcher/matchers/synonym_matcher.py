@@ -1,36 +1,46 @@
-from hpotk import Ontology, SynonymCategory, SynonymType
+from typing import Iterable
+
+from oaklib import get_adapter
+from oaklib.datamodels.vocabulary import IS_A
+from oaklib.interfaces import OboGraphInterface
 
 from deft_matcher.matcher import Matcher
+from deft_matcher.matchers.utils import validate_file_path_has_version_and_return
 from deft_matcher.ontology_class import OntologyClass
-from deft_matcher.utils import get_ontology_prefix
 
 
 class SynonymMatcher(Matcher):
     """
     If a synonym of an ontology term matches the free text,
     then that term is added to the output of get_matches.
-
-    The acceptable Synonym Categories and Types can be chosen.
-    If synonym_categories or synonym_types = None, then that will be interpreted as "anything goes".
     """
 
-    _ontology: Ontology
+    ontology_prefix: str
+    ontology_obo_path: str
+    root_term: str
+    ontology_version: str
+    _oak_ontology_str: str
+    _ontology: OboGraphInterface
     _syn_to_terms: dict[str, list[OntologyClass]]
-    _allowed_synonym_categories: list[SynonymCategory]
-    _allowed_synonym_types: list[SynonymType]
 
     def __init__(
-        self,
-        ontology: Ontology,
-        synonym_categories: list[SynonymCategory] | None = None,
-        synonym_types: list[SynonymType] | None = None,
+        self, ontology_prefix: str, ontology_obo_path: str, root_term: str
     ) -> None:
-        self._ontology = ontology
-        self._allowed_synonym_categories = self._get_allowed_synonym_categories(
-            synonym_categories
+        self.ontology_prefix = ontology_prefix
+        self.ontology_obo_path = ontology_obo_path
+        self.ontology_version = validate_file_path_has_version_and_return(
+            self.ontology_obo_path
         )
-        self._allowed_synonym_types = self._get_allowed_synonym_types(synonym_types)
+        self.root_term = root_term
+        self._oak_ontology_str = self._initialise_oak_ontology_str()
+        self._ontology = self._initialise_ontology()
         self._syn_to_terms = self._initialise_syn_to_terms()
+
+    def _initialise_oak_ontology_str(self) -> str:
+        return "simpleobo:" + self.ontology_obo_path
+
+    def _initialise_ontology(self) -> OboGraphInterface:
+        return get_adapter(self._oak_ontology_str)
 
     def _initialise_syn_to_terms(self) -> dict[str, list[OntologyClass]]:
         """
@@ -38,62 +48,25 @@ class SynonymMatcher(Matcher):
         Yes, it is possible that a synonym appears twice in an ontology.
         """
 
-        syn_to_terms = {}
+        all_term_ids: Iterable[str] = self._ontology.descendants(
+            self.root_term, predicates=[IS_A]
+        )
 
-        for term in self._ontology.terms:
-            if term.synonyms is None:
-                continue
+        syn_to_terms: dict[str, list[OntologyClass]] = {}
 
-            for syn in term.synonyms:
-                if (
-                    syn.category in self._allowed_synonym_categories
-                    and syn.synonym_type in self._allowed_synonym_types
-                ):
-                    syn_to_terms.setdefault(syn.name.lower(), []).append(
-                        OntologyClass.from_minimal_term(term)
-                    )
+        for term_id in all_term_ids:
+            synonyms: list[str] = self._ontology.entity_aliases(term_id)
+
+            for syn in synonyms:
+                syn_to_terms.setdefault(syn.lower(), []).append(
+                    OntologyClass.from_term_id(term_id, self._ontology)
+                )
 
         return syn_to_terms
 
-    @staticmethod
-    def _get_allowed_synonym_categories(
-        provided_synonym_categories: list[SynonymCategory | None] | None,
-    ) -> list[SynonymCategory]:
-        all_synonym_categories = [
-            SynonymCategory.BROAD,
-            SynonymCategory.NARROW,
-            SynonymCategory.RELATED,
-            SynonymCategory.EXACT,
-            None,
-        ]
-        return (
-            all_synonym_categories
-            if provided_synonym_categories is None
-            else provided_synonym_categories
-        )
-
-    @staticmethod
-    def _get_allowed_synonym_types(
-        provided_synonym_types: list[SynonymType | None] | None,
-    ) -> list[SynonymType]:
-        all_synonym_types = [
-            SynonymType.OBSOLETE_SYNONYM,
-            SynonymType.LAYPERSON_TERM,
-            SynonymType.ABBREVIATION,
-            SynonymType.ALLELIC_REQUIREMENT,
-            SynonymType.PLURAL_FORM,
-            SynonymType.UK_SPELLING,
-            None,
-        ]
-        return (
-            all_synonym_types
-            if provided_synonym_types is None
-            else provided_synonym_types
-        )
-
     @property
     def name(self) -> str:
-        return f"SynonymMatcher({get_ontology_prefix(self._ontology)})"
+        return f"SynonymMatcher({self.ontology_prefix.upper()})"
 
     def get_matches(self, free_text: str) -> list[OntologyClass]:
         possible_matches = self._syn_to_terms.get(free_text.lower())

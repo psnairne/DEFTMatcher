@@ -1,50 +1,28 @@
-import hpotk
-import pytest
-from hpotk import OntologyType
-
-from deft_matcher.matchers.exact_matcher import ExactMatcher
 from deft_matcher.ontology_class import OntologyClass
+from scripts.fixtures import hpo_exact_matcher, maxo_exact_matcher
 
 
-@pytest.fixture
-def exact_matcher_hpo():
-    store = hpotk.configure_ontology_store()
-    hpo = store.load_hpo(release="v2025-11-24")
-    return ExactMatcher(hpo)
-
-
-@pytest.fixture
-def exact_matcher_mondo():
-    store = hpotk.configure_ontology_store()
-    mondo = store.load_ontology(
-        ontology_type=OntologyType.MONDO,
-        release="v2025-12-02",
-        prefixes_of_interest={"MONDO"},
-    )
-    return ExactMatcher(mondo)
-
-
-def test_exact_matcher_hpo_success(exact_matcher_hpo):
-    asthma_matches = exact_matcher_hpo.get_matches("Asthma")
+def test_exact_matcher_hpo_success():
+    asthma_matches = hpo_exact_matcher().get_matches("Asthma")
 
     assert len(asthma_matches) == 1
     assert asthma_matches[0] == OntologyClass("HP:0002099", "Asthma")
 
 
-def test_exact_matcher_hpo_fail(exact_matcher_hpo):
-    asthma_matches = exact_matcher_hpo.get_matches("Osthma")
+def test_exact_matcher_hpo_fail():
+    asthma_matches = hpo_exact_matcher().get_matches("Osthma")
 
     assert len(asthma_matches) == 0
 
 
-def test_exact_matcher_mondo_success(exact_matcher_mondo):
-    marfan_matches = exact_matcher_mondo.get_matches("marfan synDROME")
+def test_exact_matcher_maxo_success():
+    bht_matches = maxo_exact_matcher().get_matches("breath hydrOGEN test")
 
-    assert len(marfan_matches) == 1
-    assert marfan_matches[0] == OntologyClass("MONDO:0007947", "Marfan syndrome")
+    assert len(bht_matches) == 1
+    assert bht_matches[0] == OntologyClass("MAXO:0035096", "breath hydrogen test")
 
 
-def test_exact_matcher_mondo_fail(exact_matcher_mondo):
-    marfan_matches = exact_matcher_mondo.get_matches("morfan syndrome")
+def test_exact_matcher_maxo_fail():
+    bht_matches = maxo_exact_matcher().get_matches("broth hydrogen test")
 
-    assert len(marfan_matches) == 0
+    assert len(bht_matches) == 0

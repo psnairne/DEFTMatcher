@@ -11,7 +11,7 @@ from scripts.fixtures import (
     fast_mondo_cr_dm,
     vector_similarity_dm,
     null_dm,
-    human_dm,
+    human_dm_hpo,
 )
 
 
@@ -32,7 +32,7 @@ def main():
             mondo_syn_dm(),
             fast_mondo_cr_dm(),
             vector_similarity_dm(),
-            human_dm(),
+            human_dm_hpo(),
             null_dm(),
         ]
     )
