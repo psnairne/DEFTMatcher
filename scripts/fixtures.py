@@ -27,7 +27,11 @@ def mondo_obo_path() -> str:
     return "/Users/patrick/DEFTMatcher/tests/assets/ontology_obo_files/mondo_v2026-02-03.obo"
 
 
-def data_output_dir() -> str:
+def maxo_obo_path() -> str:
+    return "assets/ontology_obo_files/maxo_v2026-01-15.obo"
+
+
+def fast_hpo_cr_asset_dir() -> str:
     return "/Users/patrick/DEFTMatcher/tests/assets/fast_hpo_cr_data"
 
 
@@ -82,10 +86,28 @@ def mondo_syn_matcher():
     )
 
 
+def maxo_exact_matcher():
+    return ExactMatcher(
+        "maxo",
+        maxo_obo_path(),
+        # medical action
+        "MAXO:0000001",
+    )
+
+
+def maxo_syn_matcher():
+    return SynonymMatcher(
+        "maxo",
+        maxo_obo_path(),
+        # medical action
+        "MAXO:0000001",
+    )
+
+
 def fast_hpo_cr_matcher() -> FastHPOCRMatcher:
     return FastHPOCRMatcher(
         hpo_obo_path=hpo_obo_path(),
-        data_output_dir=data_output_dir(),
+        data_output_dir=fast_hpo_cr_asset_dir(),
         # phenotypic abnormality
         root_term="HP:0000118",
     )
@@ -94,7 +116,8 @@ def fast_hpo_cr_matcher() -> FastHPOCRMatcher:
 def fast_mondo_cr_matcher() -> FastMONDOCRMatcher:
     return FastMONDOCRMatcher(
         mondo_obo_path=mondo_obo_path(),
-        data_output_dir=data_output_dir(),
+        data_output_dir=fast_hpo_cr_asset_dir(),
+        # disease
         root_term="MONDO:0000001",
     )
 
@@ -104,7 +127,7 @@ def vector_similarity_matcher() -> VectorSimilarityMatcher:
         embedding_path=embedded_hpo_path(),
         embedding_metadata_path=embedding_metadata_path(),
         embedding_model_path=embedding_model_path(),
-        similarity_threshold=0.75,
+        similarity_threshold=0.6,
         max_candidates=1,
         ontology_obo_path=hpo_obo_path(),
         ontology_prefix="hp",
@@ -113,7 +136,7 @@ def vector_similarity_matcher() -> VectorSimilarityMatcher:
     )
 
 
-def vector_similarity_matcher_five_candidates() -> VectorSimilarityMatcher:
+def hpo_candidate_retriever() -> VectorSimilarityMatcher:
     return VectorSimilarityMatcher(
         embedding_path=embedded_hpo_path(),
         embedding_metadata_path=embedding_metadata_path(),
@@ -128,17 +151,32 @@ def vector_similarity_matcher_five_candidates() -> VectorSimilarityMatcher:
 
 
 def human_matcher_hpo() -> HumanMatcher:
-    console_interface: ConsoleInterface = ConsoleInterface(
+    return HumanMatcher(hpo_console_interface(), hpo_candidate_retriever())
+
+
+def null_matcher() -> NullMatcher:
+    return NullMatcher()
+
+
+# ---USER_INTERFACES---
+
+
+def hpo_console_interface() -> ConsoleInterface:
+    return ConsoleInterface(
         ontology_prefix="hp",
         ontology_obo_path=hpo_obo_path(),
         # phenotypic abnormality
         root_term="HP:0000118",
     )
-    return HumanMatcher(console_interface, vector_similarity_matcher_five_candidates())
 
 
-def null_matcher() -> NullMatcher:
-    return NullMatcher()
+def mondo_console_interface() -> ConsoleInterface:
+    return ConsoleInterface(
+        ontology_prefix="mondo",
+        ontology_obo_path=mondo_obo_path(),
+        # disease
+        root_term="MONDO:0000001",
+    )
 
 
 # ---RESOLVERS---
