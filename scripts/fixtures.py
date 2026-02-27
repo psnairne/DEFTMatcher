@@ -45,14 +45,28 @@ def fast_hpo_cr_asset_dir() -> str:
 def embedded_hpo_path() -> str:
     return (
         get_project_root_str()
-        + "/tests/assets/vector_similarity_matcher_data/data/hpo_embedded.npz"
+        + "/tests/assets/vector_similarity_matcher_data/hpo/hpo_embeddings.npz"
     )
 
 
 def hpo_embedding_metadata_path() -> str:
     return (
         get_project_root_str()
-        + "/tests/assets/vector_similarity_matcher_data/data/hpo_meta.json"
+        + "/tests/assets/vector_similarity_matcher_data/hpo/hpo_meta.json"
+    )
+
+
+def embedded_mondo_path() -> str:
+    return (
+        get_project_root_str()
+        + "/tests/assets/vector_similarity_matcher_data/mondo/mondo_embeddings.npz"
+    )
+
+
+def mondo_embedding_metadata_path() -> str:
+    return (
+        get_project_root_str()
+        + "/tests/assets/vector_similarity_matcher_data/mondo/mondo_meta.json"
     )
 
 
