@@ -48,7 +48,7 @@ def embedded_hpo_path() -> str:
     )
 
 
-def embedding_metadata_path() -> str:
+def hpo_embedding_metadata_path() -> str:
     return (
         get_project_root_str()
         + "/tests/assets/vector_similarity_matcher_data/data/hpo_meta.json"
@@ -137,10 +137,10 @@ def fast_mondo_cr_matcher() -> FastMONDOCRMatcher:
     )
 
 
-def vector_similarity_matcher() -> VectorSimilarityMatcher:
+def hpo_vector_similarity_matcher() -> VectorSimilarityMatcher:
     return VectorSimilarityMatcher(
         embedding_path=embedded_hpo_path(),
-        embedding_metadata_path=embedding_metadata_path(),
+        embedding_metadata_path=hpo_embedding_metadata_path(),
         embedding_model_path=embedding_model_path(),
         similarity_threshold=0.6,
         max_candidates=1,
@@ -154,7 +154,7 @@ def vector_similarity_matcher() -> VectorSimilarityMatcher:
 def hpo_candidate_retriever() -> VectorSimilarityMatcher:
     return VectorSimilarityMatcher(
         embedding_path=embedded_hpo_path(),
-        embedding_metadata_path=embedding_metadata_path(),
+        embedding_metadata_path=hpo_embedding_metadata_path(),
         embedding_model_path=embedding_model_path(),
         similarity_threshold=0,
         max_candidates=5,
@@ -240,7 +240,7 @@ def fast_mondo_cr_dm() -> DecisiveMatcher:
 
 def vector_similarity_dm() -> DecisiveMatcher:
     return DecisiveMatcher(
-        matcher=vector_similarity_matcher(), ambiguity_resolver=choose_first()
+        matcher=hpo_vector_similarity_matcher(), ambiguity_resolver=choose_first()
     )
 
 
