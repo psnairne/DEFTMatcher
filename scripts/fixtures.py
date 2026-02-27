@@ -19,7 +19,6 @@ from scripts.utils import get_project_root_str
 
 
 def hpo_obo_path() -> str:
-    print(get_project_root_str())
     return (
         get_project_root_str() + "/tests/assets/ontology_obo_files/hp_v2026-02-16.obo"
     )
@@ -157,7 +156,7 @@ def hpo_vector_similarity_matcher() -> VectorSimilarityMatcher:
         embedding_path=embedded_hpo_path(),
         embedding_metadata_path=hpo_embedding_metadata_path(),
         embedding_model_path=embedding_model_path(),
-        similarity_threshold=0.6,
+        similarity_threshold=0.7,
         max_candidates=1,
         ontology_obo_path=hpo_obo_path(),
         ontology_prefix="hp",
@@ -180,8 +179,40 @@ def hpo_candidate_retriever() -> VectorSimilarityMatcher:
     )
 
 
+def mondo_candidate_retriever() -> VectorSimilarityMatcher:
+    return VectorSimilarityMatcher(
+        embedding_path=embedded_mondo_path(),
+        embedding_metadata_path=mondo_embedding_metadata_path(),
+        embedding_model_path=embedding_model_path(),
+        similarity_threshold=0,
+        max_candidates=5,
+        ontology_obo_path=mondo_obo_path(),
+        ontology_prefix="mondo",
+        # disease
+        root_term="MONDO:0000001",
+    )
+
+
+def mondo_vector_similarity_matcher() -> VectorSimilarityMatcher:
+    return VectorSimilarityMatcher(
+        embedding_path=embedded_mondo_path(),
+        embedding_metadata_path=mondo_embedding_metadata_path(),
+        embedding_model_path=embedding_model_path(),
+        similarity_threshold=0.7,
+        max_candidates=1,
+        ontology_obo_path=mondo_obo_path(),
+        ontology_prefix="mondo",
+        # disease
+        root_term="MONDO:0000001",
+    )
+
+
 def human_matcher_hpo() -> HumanMatcher:
     return HumanMatcher(hpo_console_interface(), hpo_candidate_retriever())
+
+
+def human_matcher_mondo() -> HumanMatcher:
+    return HumanMatcher(mondo_console_interface(), mondo_candidate_retriever())
 
 
 def null_matcher() -> NullMatcher:
@@ -253,15 +284,27 @@ def fast_mondo_cr_dm() -> DecisiveMatcher:
     )
 
 
-def vector_similarity_dm() -> DecisiveMatcher:
+def hpo_vector_similarity_dm() -> DecisiveMatcher:
     return DecisiveMatcher(
         matcher=hpo_vector_similarity_matcher(), ambiguity_resolver=choose_first()
+    )
+
+
+def mondo_vector_similarity_dm() -> DecisiveMatcher:
+    return DecisiveMatcher(
+        matcher=mondo_vector_similarity_matcher(), ambiguity_resolver=choose_first()
     )
 
 
 def human_dm_hpo() -> DecisiveMatcher:
     return DecisiveMatcher(
         matcher=human_matcher_hpo(), ambiguity_resolver=choose_first()
+    )
+
+
+def human_dm_mondo() -> DecisiveMatcher:
+    return DecisiveMatcher(
+        matcher=human_matcher_mondo(), ambiguity_resolver=choose_first()
     )
 
 

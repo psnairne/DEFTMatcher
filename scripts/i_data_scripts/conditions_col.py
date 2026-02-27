@@ -1,4 +1,5 @@
 from pathlib import Path
+
 import pandas as pd
 from deft_matcher.deft_matcher import DeftMatcher, DeftMatcherConfig, DeftMatcherData
 from scripts.fixtures import (
@@ -8,16 +9,18 @@ from scripts.fixtures import (
     mondo_exact_dm,
     mondo_syn_dm,
     fast_mondo_cr_dm,
-    vector_similarity_dm,
+    hpo_vector_similarity_dm,
     null_dm,
+    human_dm_hpo,
+    mondo_vector_similarity_dm,
 )
 
 
-def cancers() -> list[str]:
+def conditions() -> list[str]:
     dfs = pd.read_excel("/Users/patrick/Downloads/I_DATA/i_data.xlsx", sheet_name=None)
-    malignancies_df = dfs["Malignancies"]
-    cancer_col = malignancies_df["cancer"]
-    return list(cancer_col)
+    conditions_df = dfs["Conditions"]
+    conditions_col = conditions_df["Condition"]
+    return list(conditions_col)
 
 
 def main():
@@ -29,17 +32,19 @@ def main():
             mondo_exact_dm(),
             mondo_syn_dm(),
             fast_mondo_cr_dm(),
-            vector_similarity_dm(),
+            hpo_vector_similarity_dm(),
+            mondo_vector_similarity_dm(),
+            human_dm_hpo(),
             null_dm(),
         ]
     )
 
-    data = DeftMatcherData(free_texts=cancers(), data_name="IDATA_CANCER")
+    data = DeftMatcherData(free_texts=conditions(), data_name="IDATA_CONDITIONS")
 
-    cancer_normaliser = DeftMatcher(config=config, data=data)
+    conditions_normaliser = DeftMatcher(config=config, data=data)
 
-    cancer_normaliser.run()
-    cancer_normaliser.output_results(
+    conditions_normaliser.run()
+    conditions_normaliser.output_results(
         Path("/Users/patrick/Downloads/I_DATA/alias_csv_files")
     )
 

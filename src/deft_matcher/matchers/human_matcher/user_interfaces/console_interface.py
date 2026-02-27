@@ -102,7 +102,8 @@ class ConsoleInterface(UserInterface):
 
             self.print_invalid_input(candidates)
 
-        print(f"You chose: {selected_term}.")
+        self.print_you_chose_str(free_text, selected_term)
+
         return selected_term
 
     # -------- OUTPUT STRINGS --------
@@ -133,7 +134,6 @@ class ConsoleInterface(UserInterface):
                 method=GraphTraversalMethod.HOP,
             )
 
-            # TODO CLEAN UP
             ancestors = [a for a in ancestors if a in self._all_term_ids]
             ancestors = sorted(ancestors, reverse=True)
 
@@ -237,3 +237,10 @@ class ConsoleInterface(UserInterface):
             print(
                 f"Choice was not valid. Please choose an ontology ID of the form '{self.ontology_prefix.upper()}:1234567', or 'x' for none."
             )
+
+    @staticmethod
+    def print_you_chose_str(free_text: str, selected_term: str | None):
+        if selected_term is None:
+            print(f"You chose to skip {free_text}.")
+        else:
+            print(f"You chose: {selected_term}.")

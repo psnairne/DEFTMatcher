@@ -1,0 +1,40 @@
+from pathlib import Path
+import pandas as pd
+from deft_matcher.deft_matcher import DeftMatcher, DeftMatcherConfig, DeftMatcherData
+from scripts.fixtures import (
+    mondo_exact_dm,
+    mondo_syn_dm,
+    human_dm_mondo,
+    mondo_vector_similarity_dm,
+)
+
+
+def cancers() -> list[str]:
+    dfs = pd.read_excel("/Users/patrick/Downloads/I_DATA/i_data.xlsx", sheet_name=None)
+    malignancies_df = dfs["Malignancies"]
+    cancer_col = malignancies_df["cancer"]
+    return list(cancer_col)
+
+
+def main():
+    config = DeftMatcherConfig(
+        decisive_matchers=[
+            mondo_exact_dm(),
+            mondo_syn_dm(),
+            mondo_vector_similarity_dm(),
+            human_dm_mondo(),
+        ]
+    )
+
+    data = DeftMatcherData(free_texts=cancers(), data_name="IDATA_CANCER")
+
+    cancer_normaliser = DeftMatcher(config=config, data=data)
+
+    cancer_normaliser.run()
+    cancer_normaliser.output_results(
+        Path("/Users/patrick/Downloads/I_DATA/alias_csv_files")
+    )
+
+
+if __name__ == "__main__":
+    main()
