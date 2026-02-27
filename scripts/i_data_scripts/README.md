@@ -1,23 +1,21 @@
 # How to use DEFTMatcher
 
 <!-- TOC -->
-
 * [How to use DEFTMatcher](#how-to-use-deftmatcher)
-    * [Example case](#example-case)
-        * [Load the data](#load-the-data)
-        * [Configure which decisive matchers you want to use](#configure-which-decisive-matchers-you-want-to-use)
-        * [Configure the data](#configure-the-data)
-        * [Run the pipeline and output the results.](#run-the-pipeline-and-output-the-results)
-    * [Loading and editing a previous pipeline](#loading-and-editing-a-previous-pipeline)
-    * [Matchers, Resolvers and DecisiveMatchers](#matchers-resolvers-and-decisivematchers)
-        * [ExactMatcher](#exactmatcher)
-        * [SynonymMatcher](#synonymmatcher)
-        * [FastHPOCRMatcher](#fasthpocrmatcher)
-        * [FastMONDOCRMatcher](#fastmondocrmatcher)
-        * [VectorSimilarityMatcher](#vectorsimilaritymatcher)
-        * [HumanMatcher](#humanmatcher)
-        * [NullMatcher](#nullmatcher)
-
+  * [Example case](#example-case)
+    * [Load the data](#load-the-data)
+    * [Configure which decisive matchers you want to use](#configure-which-decisive-matchers-you-want-to-use)
+    * [Configure the data](#configure-the-data)
+    * [Run the pipeline and output the results.](#run-the-pipeline-and-output-the-results)
+  * [Loading and editing a previous pipeline](#loading-and-editing-a-previous-pipeline)
+  * [Matchers, Resolvers and DecisiveMatchers](#matchers-resolvers-and-decisivematchers)
+    * [ExactMatcher](#exactmatcher)
+    * [SynonymMatcher](#synonymmatcher)
+    * [FastHPOCRMatcher](#fasthpocrmatcher)
+    * [FastMONDOCRMatcher](#fastmondocrmatcher)
+    * [VectorSimilarityMatcher](#vectorsimilaritymatcher)
+    * [HumanMatcher](#humanmatcher)
+    * [NullMatcher](#nullmatcher)
 <!-- TOC -->
 
 ## Example case
