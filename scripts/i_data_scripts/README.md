@@ -1,5 +1,3 @@
-from scripts.fixtures import hpo_console_interface
-
 # How to use DEFTMatcher
 
 <!-- TOC -->
