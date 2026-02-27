@@ -16,6 +16,7 @@
     * [VectorSimilarityMatcher](#vectorsimilaritymatcher)
     * [HumanMatcher](#humanmatcher)
     * [NullMatcher](#nullmatcher)
+  * [Logging](#logging)
 <!-- TOC -->
 
 ## Example case
@@ -215,7 +216,7 @@ I have seen.
 
 ### HumanMatcher
 
-This is set-up as follows
+This is set up as follows
 
 ```python
 hpo_console_interface = ConsoleInterface(
@@ -253,3 +254,8 @@ For PhenoXtract, it can be convenient to map free texts to completely empty onto
 be empty strings. The NullMatcher simply matches every remaining text to the empty ontology class OntologyClass(,).
 There's also a ConstantMatcher, which works in the obvious way, if you want to map free_texts to a specific
 OntologyClass of your choosing.
+
+## Logging
+
+Wherever you run DEFTMatcher, a logging file will be created. It sometimes takes a while to get up-to-date. But it can
+be good for debugging.
