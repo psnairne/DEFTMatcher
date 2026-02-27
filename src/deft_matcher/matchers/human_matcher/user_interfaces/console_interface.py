@@ -1,5 +1,3 @@
-from typing import Iterable
-
 from oaklib import get_adapter
 from oaklib.datamodels.vocabulary import IS_A
 from oaklib.interfaces import OboGraphInterface
@@ -22,6 +20,7 @@ class ConsoleInterface(UserInterface):
     root_term: str
     ontology_version: str
     interface: UserInterface
+    _all_term_ids: set[str]
     _id_to_term: dict[str, OntologyClass]
     _label_to_term: dict[str, OntologyClass]
 
@@ -36,6 +35,7 @@ class ConsoleInterface(UserInterface):
         )
         self._oak_ontology_str = self._initialise_oak_ontology_str()
         self._ontology = self._initialise_ontology()
+        self._all_term_ids = self._initialise_all_term_ids()
         self._id_to_term = self._initialise_id_to_term()
         self._label_to_term = self._initialise_label_to_term()
 
@@ -49,21 +49,18 @@ class ConsoleInterface(UserInterface):
     def _initialise_ontology(self) -> OboGraphInterface:
         return get_adapter(self._oak_ontology_str)
 
+    def _initialise_all_term_ids(self) -> set[str]:
+        return set(self._ontology.descendants(self.root_term, predicates=[IS_A]))
+
     def _initialise_id_to_term(self) -> dict[str, OntologyClass]:
-        all_term_ids: Iterable[str] = self._ontology.descendants(
-            self.root_term, predicates=[IS_A]
-        )
         id_to_term: dict[str, OntologyClass] = dict()
-        for term_id in all_term_ids:
+        for term_id in self._all_term_ids:
             id_to_term[term_id] = OntologyClass.from_term_id(term_id, self._ontology)
         return id_to_term
 
     def _initialise_label_to_term(self) -> dict[str, OntologyClass]:
-        all_term_ids: Iterable[str] = self._ontology.descendants(
-            self.root_term, predicates=[IS_A]
-        )
         label_to_term: dict[str, OntologyClass] = dict()
-        for term_id in all_term_ids:
+        for term_id in self._all_term_ids:
             label: str = self._ontology.label(term_id)
             label_to_term[label.lower()] = OntologyClass.from_term_id(
                 term_id, self._ontology
@@ -123,8 +120,6 @@ class ConsoleInterface(UserInterface):
         if not candidates:
             return {}
 
-        ancestors_to_ignore = set(self._ontology.ancestors(self.root_term))
-
         seen_ancestors: set[OntologyClass] = set(candidates)
 
         candidate_ancestor_encoding: dict[str, OntologyClass] = {}
@@ -138,13 +133,15 @@ class ConsoleInterface(UserInterface):
                 method=GraphTraversalMethod.HOP,
             )
 
-            sorted_ancestors = sorted(ancestors, reverse=True)
+            # TODO CLEAN UP
+            ancestors = [a for a in ancestors if a in self._all_term_ids]
+            ancestors = sorted(ancestors, reverse=True)
 
-            for ancestor in sorted_ancestors:
+            for ancestor in ancestors:
                 if not ancestor.startswith(self.ontology_prefix.upper()):
                     continue
 
-                if ancestor in ancestors_to_ignore:
+                if ancestor == self.root_term:
                     continue
 
                 ancestor_oc = OntologyClass.from_term_id(ancestor, self._ontology)
