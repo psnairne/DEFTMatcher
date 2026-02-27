@@ -1,5 +1,4 @@
 import json
-from typing import List, Dict, Set
 
 import faiss
 import numpy as np
@@ -21,6 +20,7 @@ class CandidateRetriever:
     embedding_path: str
     embedding_metadata_path: str
     embedding_model_path: str
+    _embedding_metadata = list[str]
     _emb_model: SentenceTransformer
 
     def __init__(
@@ -49,20 +49,21 @@ class CandidateRetriever:
         faiss_index.add(emb_matrix)  # type: ignore[arg-type]
         return faiss_index
 
-    def _load_embedding_meta_data(self) -> List[Dict[str, str]]:
+    def _load_embedding_meta_data(self) -> list[str]:
         """
-        Output is a list of dictionaries of the form
-        {
-            'hp_id': HPO ID,
-            'info': synonym or label
-        }
+        Output is a list of HPO IDs corresponding to the vectors in the embedding matrix.
 
         The order of the list, corresponds to the order of the embedding matrix,
         and to the indices returned by a search on the FAISS index.
         """
         with open(self.embedding_metadata_path, "r", encoding="utf-8") as f:
-            entries = json.load(f).get("entries", [])
-        return [{k: v for k, v in e.items() if k != "direction"} for e in entries]
+            metadata = json.load(f)
+
+        # Extract only the embedded_text_id.value field
+        return [
+            metadata_element["embedded_text_id"]["value"]
+            for metadata_element in metadata
+        ]
 
     def _initialise_embeddings_model(self) -> SentenceTransformer:
         """
@@ -94,7 +95,7 @@ class CandidateRetriever:
         query_vec: np.ndarray[np.float32] = self.embed_phrase(phrase)
         (similarities,), (indices,) = self._faiss_index.search(query_vec, 500)  # type: ignore[arg-type]
 
-        seen_ids: Set[str] = set()
+        seen_ids: set[str] = set()
         candidates: list[str] = []
 
         ranked_search_results = sorted(
@@ -105,8 +106,7 @@ class CandidateRetriever:
             if similarity_score < similarity_threshold:
                 break
 
-            metadata: dict[str, str] = self._embedding_metadata[idx]
-            ontology_id: str = metadata.get("hp_id")
+            ontology_id: str = self._embedding_metadata[idx]
 
             if ontology_id in seen_ids:
                 continue
