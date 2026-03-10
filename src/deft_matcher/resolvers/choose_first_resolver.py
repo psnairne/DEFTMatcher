@@ -1,10 +1,10 @@
-from deft_matcher.ambiguity_resolver import AmbiguityResolver
+from deft_matcher.resolver import Resolver
 from deft_matcher.ontology_class import OntologyClass
 
 
-class ChooseFirstResolver(AmbiguityResolver):
+class ChooseFirstResolver(Resolver):
     """
-    The simplest ambiguity resolver imaginable.
+    The simplest resolver imaginable.
 
     If there is a list of possibilities, choose the first.
     """

@@ -24,7 +24,7 @@ def conditions() -> list[str]:
 
 def main():
     config = DeftMatcherConfig(
-        decisive_matchers=[
+        matchers=[
             hpo_exact_dm(),
             hpo_syn_dm(),
             fast_hpo_cr_dm(),

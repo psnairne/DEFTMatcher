@@ -1,4 +1,4 @@
-from deft_matcher.ambiguity_resolvers.choose_first_resolver import ChooseFirstResolver
+from deft_matcher.resolvers.choose_first_resolver import ChooseFirstResolver
 from deft_matcher.ontology_class import OntologyClass
 
 

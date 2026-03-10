@@ -5,10 +5,10 @@
 # from hpotk import Ontology
 #
 # from deft_matcher.matcher import Matcher
-# from deft_matcher.matchers.vector_similarity_matcher.candidate_retriever import (
+# from deft_matcher.matchers_and_retrievers.vector_similarity_retriever.candidate_retriever import (
 #     CandidateRetriever,
 # )
-# from deft_matcher.matchers.deprecated.ollama_client import OllamaClient
+# from deft_matcher.matchers_and_retrievers.deprecated.ollama_client import OllamaClient
 # from deft_matcher.ontology_class import OntologyClass
 #
 #
@@ -70,7 +70,7 @@
 #
 #     def get_matches(self, free_text: str) -> list[OntologyClass]:
 #         with open(
-#             "/deft_matcher/matchers/deprecated/system_message.txt",
+#             "/deft_matcher/matchers_and_retrievers/deprecated/system_message.txt",
 #             "r",
 #             encoding="utf-8",
 #         ) as f:

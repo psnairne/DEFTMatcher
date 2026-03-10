@@ -4,18 +4,18 @@ from oaklib import get_adapter
 from oaklib.datamodels.vocabulary import IS_A
 from oaklib.interfaces import OboGraphInterface
 
-from deft_matcher.matcher import Matcher
-from deft_matcher.matchers.utils import validate_file_path_has_version_and_return
-from deft_matcher.matchers.vector_similarity_matcher.candidate_retriever import (
-    CandidateRetriever,
+from deft_matcher.retriever import Retriever
+from deft_matcher.utils import validate_file_path_has_version_and_return
+from deft_matcher.retrievers.vector_similarity_retriever.vector_embedder import (
+    VectorEmbedder,
 )
 from deft_matcher.ontology_class import OntologyClass
 
 
-class VectorSimilarityMatcher(Matcher):
+class VectorSimilarityRetriever(Retriever):
     """
     Given an embeddings.npz file and a metadata.json file whose indexes agree with those of the embeddings,
-    this matcher will retrieve candidate ontology terms based on a vector similarity search.
+    this retriever will retrieve candidate ontology terms based on a vector similarity search.
 
     Note: the version of the embedded ontology MUST agree with the version of the ontology used for Oaklib.
     """
@@ -45,7 +45,7 @@ class VectorSimilarityMatcher(Matcher):
         self.embedding_path = embedding_path
         self.embedding_metadata_path = embedding_metadata_path
         self.embedding_model_path = embedding_model_path
-        self._candidate_retriever = CandidateRetriever(
+        self._candidate_retriever = VectorEmbedder(
             embedding_path, embedding_metadata_path, embedding_model_path
         )
         self.similarity_threshold = similarity_threshold
