@@ -36,6 +36,9 @@ class DeftMatcherData:
     free_texts: list[str]
     data_name: str
 
+    def __post_init__(self):
+        self.free_texts = [str(v) for v in self.free_texts if not pd.isna(v)]
+
 
 @dataclass(frozen=True)
 class MatchData:
@@ -207,6 +210,7 @@ class DeftMatcher:
         obj.time_started = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
         obj.decisive_matchers = decisive_matchers
         obj.next_index = 0
+        obj.uuid = str(uuid4())
         obj.next_matcher = obj.get_next_matcher_from_next_index()
         obj.next_resolver = obj.get_next_resolver_from_next_index()
         obj.logger = obj.initialise_logger()
