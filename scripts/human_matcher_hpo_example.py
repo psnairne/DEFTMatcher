@@ -1,11 +1,13 @@
-from deft_matcher.matchers.human_matcher import HumanRetriever
-from scripts.fixtures import hpo_candidate_retriever, hpo_console_interface
+from deft_matcher.matchers.human_matcher.human_matcher import HumanMatcher
+from scripts.fixtures import hpo_vec_similarity_retriever, hpo_console_interface
 
 
 def main():
-    human_matcher = HumanRetriever(hpo_console_interface(), hpo_candidate_retriever())
+    human_matcher = HumanMatcher(
+        hpo_console_interface(), hpo_vec_similarity_retriever()
+    )
 
-    human_matcher.get_matches("My leg hurts a lot")
+    human_matcher.match("My leg hurts a lot")
 
 
 if __name__ == "__main__":

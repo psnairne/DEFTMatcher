@@ -74,7 +74,7 @@ class VectorSimilarityRetriever(Retriever):
 
     @property
     def name(self) -> str:
-        return f"VectorSimilarityMatcher({self.ontology_prefix.upper()})"
+        return f"VectorSimilarityRetriever({self.ontology_prefix.upper()})"
 
     def get_matches(self, free_text: str) -> list[OntologyClass]:
         candidates: list[str] = self._candidate_retriever.get_most_similar(

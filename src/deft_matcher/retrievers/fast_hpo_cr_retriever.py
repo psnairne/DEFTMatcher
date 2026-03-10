@@ -92,7 +92,7 @@ class FastHPOCRRetriever(Retriever):
 
     @property
     def name(self) -> str:
-        return "FastHPOCRMatcher"
+        return "FastHPOCRetriever"
 
     def get_matches(self, free_text: str) -> list[OntologyClass]:
         annotations = self._annotator.annotate(free_text)

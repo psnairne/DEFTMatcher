@@ -20,5 +20,5 @@ class CombinedMatcher(Matcher):
         return self.retriever.name + "+" + self.resolver.name
 
     def match(self, free_text: str) -> OntologyClass | None:
-        candidates = self.retriever.get_matches(free_text)
+        candidates: list[OntologyClass] = self.retriever.get_matches(free_text)
         return self.resolver.resolve(candidates)

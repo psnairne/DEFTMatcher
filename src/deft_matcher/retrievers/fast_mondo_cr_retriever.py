@@ -95,7 +95,7 @@ class FastMONDOCRRetriever(Retriever):
 
     @property
     def name(self) -> str:
-        return "FastMONDOCRMatcher"
+        return "FastMONDOCRRetriever"
 
     def get_matches(self, free_text: str) -> list[OntologyClass]:
         annotations = self._annotator.annotate(free_text)
