@@ -1,7 +1,6 @@
 from oaklib import get_adapter
 from oaklib.datamodels.vocabulary import IS_A
 from oaklib.interfaces import OboGraphInterface
-from oaklib.interfaces.obograph_interface import GraphTraversalMethod
 
 from deft_matcher.matchers.utils import validate_file_path_has_version_and_return
 from deft_matcher.ontology_class import OntologyClass
@@ -127,15 +126,7 @@ class ConsoleInterface(UserInterface):
             candidate_ancestor_encoding[str(i)] = candidate
             j: int = 0  # counts how many ancestors for this candidate we are displaying
 
-            ancestors = self._ontology.ancestors(
-                start_curies=candidate.curie_id,
-                reflexive=False,
-                method=GraphTraversalMethod.HOP,
-            )
-
-            # TODO CLEAN UP
-            ancestors = [a for a in ancestors if a in self._all_term_ids]
-            ancestors = sorted(ancestors, reverse=True)
+            ancestors: list[str] = self.get_ordered_ancestors(candidate)
 
             for ancestor in ancestors:
                 if not ancestor.startswith(self.ontology_prefix.upper()):
@@ -153,6 +144,31 @@ class ConsoleInterface(UserInterface):
                     seen_ancestors.add(ancestor_oc)
 
         return candidate_ancestor_encoding
+
+    def get_ordered_ancestors(self, candidate: OntologyClass) -> list[str]:
+        """
+        Returns ancestors of the candidate, ordered from most specific
+        (closest to start) to most general (furthest from start).
+        """
+
+        visited: set[str] = set()
+        queue: list[str] = [candidate.curie_id]
+        ancestor_distance: dict[str, int] = {candidate.curie_id: 0}
+
+        index = 0
+        while index < len(queue):
+            child = queue[index]
+            for parent in self._ontology.hierarchical_parents(child):
+                if parent not in visited and parent in self._all_term_ids:
+                    visited.add(parent)
+                    ancestor_distance[parent] = ancestor_distance.get(child) + 1
+                    queue.append(parent)
+            index += 1
+
+        ancestors_sorted = sorted(
+            ancestor_distance.keys(), key=lambda a: ancestor_distance[a]
+        )
+        return ancestors_sorted
 
     @staticmethod
     def print_candidates_and_ancestors(ca_dict: dict[str, OntologyClass]):
