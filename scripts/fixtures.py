@@ -19,7 +19,6 @@ from scripts.utils import get_project_root_str
 
 
 def hpo_obo_path() -> str:
-    print(get_project_root_str())
     return (
         get_project_root_str() + "/tests/assets/ontology_obo_files/hp_v2026-02-16.obo"
     )
@@ -45,14 +44,14 @@ def fast_hpo_cr_asset_dir() -> str:
 def embedded_hpo_path() -> str:
     return (
         get_project_root_str()
-        + "/tests/assets/vector_similarity_matcher_data/data/hpo_embedded.npz"
+        + "/tests/assets/vector_similarity_matcher_data/hpo/hpo_embeddings.npz"
     )
 
 
 def embedding_metadata_path() -> str:
     return (
         get_project_root_str()
-        + "/tests/assets/vector_similarity_matcher_data/data/hpo_meta.json"
+        + "/tests/assets/vector_similarity_matcher_data/hpo/hpo_meta.json"
     )
 
 
