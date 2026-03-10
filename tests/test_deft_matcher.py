@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 from deft_matcher.deft_matcher import DeftMatcher, DeftMatcherConfig, DeftMatcherData
 from deft_matcher.ontology_class import OntologyClass
-from scripts.fixtures import hpo_exact_dm, hpo_syn_dm
+from scripts.fixtures import hpo_exact_matcher, hpo_syn_matcher
 
 
 @pytest.fixture
@@ -43,7 +43,7 @@ def test_metadata_path(test_deft_matcher_output_dir) -> str:
 
 
 def test_deft_matcher(conditions):
-    config = DeftMatcherConfig(decisive_matchers=[hpo_exact_dm()])
+    config = DeftMatcherConfig(matchers=[hpo_exact_matcher()])
 
     data = DeftMatcherData(free_texts=conditions, data_name="example_data")
 
@@ -56,7 +56,7 @@ def test_deft_matcher(conditions):
 
 
 def test_output_results(conditions):
-    config = DeftMatcherConfig(decisive_matchers=[hpo_exact_dm()])
+    config = DeftMatcherConfig(matchers=[hpo_exact_matcher()])
 
     data = DeftMatcherData(free_texts=conditions, data_name="example_data")
 
@@ -82,19 +82,19 @@ def test_load_from_state(test_matchings_path, test_metadata_path):
     deft_matcher = DeftMatcher.load_state_from_files(
         matching_file_path=test_matchings_path,
         metadata_file_path=test_metadata_path,
-        decisive_matchers=[hpo_syn_dm()],
+        matchers=[hpo_syn_matcher()],
     )
 
     assert len(deft_matcher.matchings) == 2
     assert len(deft_matcher.unmatched) == 2
-    assert len(deft_matcher.decisive_matchers) == 1
+    assert len(deft_matcher.matchers) == 1
 
 
 def test_rematch(example_oc, test_matchings_path, test_metadata_path):
     deft_matcher = DeftMatcher.load_state_from_files(
         matching_file_path=test_matchings_path,
         metadata_file_path=test_metadata_path,
-        decisive_matchers=[hpo_syn_dm()],
+        matchers=[hpo_syn_matcher()],
     )
 
     deft_matcher.rematch("asthma", example_oc)
@@ -106,7 +106,7 @@ def test_rematch_fail(example_oc, test_matchings_path, test_metadata_path):
     deft_matcher = DeftMatcher.load_state_from_files(
         matching_file_path=test_matchings_path,
         metadata_file_path=test_metadata_path,
-        decisive_matchers=[hpo_syn_dm()],
+        matchers=[hpo_syn_matcher()],
     )
 
     with pytest.raises(KeyError):
@@ -117,7 +117,7 @@ def test_bulk_rematch(example_oc, test_matchings_path, test_metadata_path):
     deft_matcher = DeftMatcher.load_state_from_files(
         matching_file_path=test_matchings_path,
         metadata_file_path=test_metadata_path,
-        decisive_matchers=[hpo_syn_dm()],
+        matchers=[hpo_syn_matcher()],
     )
 
     deft_matcher.bulk_rematch({"asthma": example_oc, "pneumonia": example_oc})
@@ -130,7 +130,7 @@ def test_bulk_rematch_fail(example_oc, test_matchings_path, test_metadata_path):
     deft_matcher = DeftMatcher.load_state_from_files(
         matching_file_path=test_matchings_path,
         metadata_file_path=test_metadata_path,
-        decisive_matchers=[hpo_syn_dm()],
+        matchers=[hpo_syn_matcher()],
     )
 
     with pytest.raises(KeyError):
@@ -141,7 +141,7 @@ def test_unmatch(test_matchings_path, test_metadata_path):
     deft_matcher = DeftMatcher.load_state_from_files(
         matching_file_path=test_matchings_path,
         metadata_file_path=test_metadata_path,
-        decisive_matchers=[hpo_syn_dm()],
+        matchers=[hpo_syn_matcher()],
     )
 
     deft_matcher.unmatch("asthma")
@@ -156,7 +156,7 @@ def test_unmatch_fail(test_matchings_path, test_metadata_path):
     deft_matcher = DeftMatcher.load_state_from_files(
         matching_file_path=test_matchings_path,
         metadata_file_path=test_metadata_path,
-        decisive_matchers=[hpo_syn_dm()],
+        matchers=[hpo_syn_matcher()],
     )
 
     with pytest.raises(KeyError):
@@ -167,7 +167,7 @@ def test_bulk_unmatch(test_matchings_path, test_metadata_path):
     deft_matcher = DeftMatcher.load_state_from_files(
         matching_file_path=test_matchings_path,
         metadata_file_path=test_metadata_path,
-        decisive_matchers=[hpo_syn_dm()],
+        matchers=[hpo_syn_matcher()],
     )
 
     deft_matcher.bulk_unmatch(["asthma", "pneumonia"])
@@ -180,7 +180,7 @@ def test_bulk_unmatch_fail(test_matchings_path, test_metadata_path):
     deft_matcher = DeftMatcher.load_state_from_files(
         matching_file_path=test_matchings_path,
         metadata_file_path=test_metadata_path,
-        decisive_matchers=[hpo_syn_dm()],
+        matchers=[hpo_syn_matcher()],
     )
 
     with pytest.raises(KeyError):
@@ -191,7 +191,7 @@ def test_match(example_oc, test_matchings_path, test_metadata_path):
     deft_matcher = DeftMatcher.load_state_from_files(
         matching_file_path=test_matchings_path,
         metadata_file_path=test_metadata_path,
-        decisive_matchers=[hpo_syn_dm()],
+        matchers=[hpo_syn_matcher()],
     )
 
     deft_matcher.match("osthma", example_oc)
@@ -206,7 +206,7 @@ def test_match_fail(example_oc, test_matchings_path, test_metadata_path):
     deft_matcher = DeftMatcher.load_state_from_files(
         matching_file_path=test_matchings_path,
         metadata_file_path=test_metadata_path,
-        decisive_matchers=[hpo_syn_dm()],
+        matchers=[hpo_syn_matcher()],
     )
 
     with pytest.raises(KeyError):
@@ -217,7 +217,7 @@ def test_bulk_match(example_oc, test_matchings_path, test_metadata_path):
     deft_matcher = DeftMatcher.load_state_from_files(
         matching_file_path=test_matchings_path,
         metadata_file_path=test_metadata_path,
-        decisive_matchers=[hpo_syn_dm()],
+        matchers=[hpo_syn_matcher()],
     )
     deft_matcher.bulk_match({"osthma": example_oc, "pneumonio": example_oc})
 
@@ -231,7 +231,7 @@ def test_bulk_match_fail(example_oc, test_matchings_path, test_metadata_path):
     deft_matcher = DeftMatcher.load_state_from_files(
         matching_file_path=test_matchings_path,
         metadata_file_path=test_metadata_path,
-        decisive_matchers=[hpo_syn_dm()],
+        matchers=[hpo_syn_matcher()],
     )
 
     with pytest.raises(KeyError):

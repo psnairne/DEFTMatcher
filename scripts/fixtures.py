@@ -1,16 +1,18 @@
-from deft_matcher.ambiguity_resolvers.choose_first_resolver import ChooseFirstResolver
-from deft_matcher.decisive_matcher import DecisiveMatcher
-from deft_matcher.matchers.exact_matcher import ExactMatcher
-from deft_matcher.matchers.fast_hpo_cr_matcher import FastHPOCRMatcher
-from deft_matcher.matchers.fast_mondo_cr_matcher import FastMONDOCRMatcher
+from deft_matcher.matchers.combined_matcher import CombinedMatcher
 from deft_matcher.matchers.human_matcher.human_matcher import HumanMatcher
+from deft_matcher.matchers.vector_similarity_matcher import VectorSimilarityMatcher
+from deft_matcher.resolvers.choose_first_resolver import ChooseFirstResolver
+from deft_matcher.matcher import Matcher
+from deft_matcher.matchers.exact_matcher import ExactMatcher
+from deft_matcher.retrievers.fast_hpo_cr_retriever import FastHPOCRRetriever
+from deft_matcher.retrievers.fast_mondo_cr_retriever import FastMONDOCRRetriever
 from deft_matcher.matchers.human_matcher.user_interfaces.console_interface import (
     ConsoleInterface,
 )
 from deft_matcher.matchers.null_matcher import NullMatcher
-from deft_matcher.matchers.synonym_matcher import SynonymMatcher
-from deft_matcher.matchers.vector_similarity_matcher.vector_similarity_matcher import (
-    VectorSimilarityMatcher,
+from deft_matcher.retrievers.synonym_retriever import SynonymRetriever
+from deft_matcher.retrievers.vector_similarity_retriever.vector_similarity_retriever import (
+    VectorSimilarityRetriever,
 )
 from scripts.utils import get_project_root_str
 
@@ -41,14 +43,14 @@ def fast_hpo_cr_asset_dir() -> str:
     return get_project_root_str() + "/tests/assets/fast_hpo_cr_data"
 
 
-def embedded_hpo_path() -> str:
+def hpo_embedding_path() -> str:
     return (
         get_project_root_str()
         + "/tests/assets/vector_similarity_matcher_data/hpo/hpo_embeddings.npz"
     )
 
 
-def embedding_metadata_path() -> str:
+def hpo_embedding_metadata_path() -> str:
     return (
         get_project_root_str()
         + "/tests/assets/vector_similarity_matcher_data/hpo/hpo_meta.json"
@@ -62,11 +64,11 @@ def embedding_model_path() -> str:
     )
 
 
-# ---MATCHERS---
+# ---RETRIEVERS---
 
 
-def hpo_exact_matcher():
-    return ExactMatcher(
+def hpo_syn_retriever():
+    return SynonymRetriever(
         "hp",
         hpo_obo_path(),
         # phenotypic abnormality
@@ -74,8 +76,68 @@ def hpo_exact_matcher():
     )
 
 
-def hpo_syn_matcher():
-    return SynonymMatcher(
+def mondo_syn_retriever():
+    return SynonymRetriever(
+        "mondo",
+        mondo_obo_path(),
+        # disease
+        "MONDO:0000001",
+    )
+
+
+def maxo_syn_retriever():
+    return SynonymRetriever(
+        "maxo",
+        maxo_obo_path(),
+        # medical action
+        "MAXO:0000001",
+    )
+
+
+def fast_hpo_cr_retriever() -> FastHPOCRRetriever:
+    return FastHPOCRRetriever(
+        hpo_obo_path=hpo_obo_path(),
+        data_output_dir=fast_hpo_cr_asset_dir(),
+        # phenotypic abnormality
+        root_term="HP:0000118",
+    )
+
+
+def fast_mondo_cr_retriever() -> FastMONDOCRRetriever:
+    return FastMONDOCRRetriever(
+        mondo_obo_path=mondo_obo_path(),
+        data_output_dir=fast_hpo_cr_asset_dir(),
+        # disease
+        root_term="MONDO:0000001",
+    )
+
+
+def hpo_vec_similarity_retriever() -> VectorSimilarityRetriever:
+    return VectorSimilarityRetriever(
+        embedding_path=hpo_embedding_path(),
+        embedding_metadata_path=hpo_embedding_metadata_path(),
+        embedding_model_path=embedding_model_path(),
+        similarity_threshold=0,
+        max_candidates=5,
+        ontology_obo_path=hpo_obo_path(),
+        ontology_prefix="hp",
+        # phenotypic abnormality
+        root_term="HP:0000118",
+    )
+
+
+# ---RESOLVERS---
+
+
+def choose_first() -> ChooseFirstResolver:
+    return ChooseFirstResolver()
+
+
+# ---MATCHERS---
+
+
+def hpo_exact_matcher():
+    return ExactMatcher(
         "hp",
         hpo_obo_path(),
         # phenotypic abnormality
@@ -92,15 +154,6 @@ def mondo_exact_matcher():
     )
 
 
-def mondo_syn_matcher():
-    return SynonymMatcher(
-        "mondo",
-        mondo_obo_path(),
-        # disease
-        "MONDO:0000001",
-    )
-
-
 def maxo_exact_matcher():
     return ExactMatcher(
         "maxo",
@@ -110,40 +163,12 @@ def maxo_exact_matcher():
     )
 
 
-def maxo_syn_matcher():
-    return SynonymMatcher(
-        "maxo",
-        maxo_obo_path(),
-        # medical action
-        "MAXO:0000001",
-    )
-
-
-def fast_hpo_cr_matcher() -> FastHPOCRMatcher:
-    return FastHPOCRMatcher(
-        hpo_obo_path=hpo_obo_path(),
-        data_output_dir=fast_hpo_cr_asset_dir(),
-        # phenotypic abnormality
-        root_term="HP:0000118",
-    )
-
-
-def fast_mondo_cr_matcher() -> FastMONDOCRMatcher:
-    return FastMONDOCRMatcher(
-        mondo_obo_path=mondo_obo_path(),
-        data_output_dir=fast_hpo_cr_asset_dir(),
-        # disease
-        root_term="MONDO:0000001",
-    )
-
-
-def vector_similarity_matcher() -> VectorSimilarityMatcher:
+def hpo_vec_similarity_matcher() -> VectorSimilarityMatcher:
     return VectorSimilarityMatcher(
-        embedding_path=embedded_hpo_path(),
-        embedding_metadata_path=embedding_metadata_path(),
+        embedding_path=hpo_embedding_path(),
+        embedding_metadata_path=hpo_embedding_metadata_path(),
         embedding_model_path=embedding_model_path(),
         similarity_threshold=0.6,
-        max_candidates=1,
         ontology_obo_path=hpo_obo_path(),
         ontology_prefix="hp",
         # phenotypic abnormality
@@ -151,22 +176,8 @@ def vector_similarity_matcher() -> VectorSimilarityMatcher:
     )
 
 
-def hpo_candidate_retriever() -> VectorSimilarityMatcher:
-    return VectorSimilarityMatcher(
-        embedding_path=embedded_hpo_path(),
-        embedding_metadata_path=embedding_metadata_path(),
-        embedding_model_path=embedding_model_path(),
-        similarity_threshold=0,
-        max_candidates=5,
-        ontology_obo_path=hpo_obo_path(),
-        ontology_prefix="hp",
-        # phenotypic abnormality
-        root_term="HP:0000118",
-    )
-
-
-def human_matcher_hpo() -> HumanMatcher:
-    return HumanMatcher(hpo_console_interface(), hpo_candidate_retriever())
+def hpo_human_matcher() -> HumanMatcher:
+    return HumanMatcher(hpo_console_interface(), hpo_vec_similarity_retriever())
 
 
 def null_matcher() -> NullMatcher:
@@ -194,61 +205,20 @@ def mondo_console_interface() -> ConsoleInterface:
     )
 
 
-# ---RESOLVERS---
+# ---COMBINED_MATCHERS---
 
 
-def choose_first() -> ChooseFirstResolver:
-    return ChooseFirstResolver()
+def hpo_syn_matcher() -> Matcher:
+    return CombinedMatcher(hpo_syn_retriever(), choose_first())
 
 
-# ---DECISIVE_MATCHERS---
+def mondo_syn_matcher() -> Matcher:
+    return CombinedMatcher(mondo_syn_retriever(), choose_first())
 
 
-def hpo_exact_dm() -> DecisiveMatcher:
-    return DecisiveMatcher(
-        matcher=hpo_exact_matcher(), ambiguity_resolver=choose_first()
-    )
+def fast_hpo_cr_matcher() -> Matcher:
+    return CombinedMatcher(fast_hpo_cr_retriever(), choose_first())
 
 
-def hpo_syn_dm() -> DecisiveMatcher:
-    return DecisiveMatcher(matcher=hpo_syn_matcher(), ambiguity_resolver=choose_first())
-
-
-def fast_hpo_cr_dm() -> DecisiveMatcher:
-    return DecisiveMatcher(
-        matcher=fast_hpo_cr_matcher(), ambiguity_resolver=choose_first()
-    )
-
-
-def mondo_exact_dm() -> DecisiveMatcher:
-    return DecisiveMatcher(
-        matcher=mondo_exact_matcher(), ambiguity_resolver=choose_first()
-    )
-
-
-def mondo_syn_dm() -> DecisiveMatcher:
-    return DecisiveMatcher(
-        matcher=mondo_syn_matcher(), ambiguity_resolver=choose_first()
-    )
-
-
-def fast_mondo_cr_dm() -> DecisiveMatcher:
-    return DecisiveMatcher(
-        matcher=fast_mondo_cr_matcher(), ambiguity_resolver=choose_first()
-    )
-
-
-def vector_similarity_dm() -> DecisiveMatcher:
-    return DecisiveMatcher(
-        matcher=vector_similarity_matcher(), ambiguity_resolver=choose_first()
-    )
-
-
-def human_dm_hpo() -> DecisiveMatcher:
-    return DecisiveMatcher(
-        matcher=human_matcher_hpo(), ambiguity_resolver=choose_first()
-    )
-
-
-def null_dm() -> DecisiveMatcher:
-    return DecisiveMatcher(matcher=null_matcher(), ambiguity_resolver=choose_first())
+def fast_mondo_cr_matcher() -> Matcher:
+    return CombinedMatcher(fast_mondo_cr_retriever(), choose_first())

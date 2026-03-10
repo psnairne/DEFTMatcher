@@ -7,8 +7,6 @@ from uuid import uuid4
 import pandas as pd
 from pandas import DataFrame
 
-from deft_matcher.ambiguity_resolver import AmbiguityResolver
-from deft_matcher.decisive_matcher import DecisiveMatcher
 from deft_matcher.matcher import Matcher
 from pathlib import Path
 from datetime import datetime
@@ -24,7 +22,7 @@ class DeftMatcherConfig:
     Holds the configuration for a DeftMatcher pipeline.
     """
 
-    decisive_matchers: list[DecisiveMatcher]
+    matchers: list[Matcher]
 
 
 @dataclass
@@ -48,7 +46,6 @@ class MatchData:
 
     match: OntologyClass
     matcher_name: str
-    resolver_name: str
 
 
 @dataclass(frozen=True)
@@ -63,7 +60,7 @@ class MetaDataStatistics:
     number_of_unique_free_texts_matched: int
     number_of_free_texts_unmatched: int
     number_of_unique_free_texts_unmatched: int
-    unique_free_texts_matched_by_decisive_matcher: dict[str, int]
+    unique_free_texts_matched_by_matcher: dict[str, int]
 
 
 @dataclass(frozen=True)
@@ -75,7 +72,7 @@ class MetaData:
     data_name: str
     time_started: str
     time_created: str
-    decisive_matchers: list[tuple[str, str]]
+    matchers: list[str]
     matching_uuid: str
     statistics: MetaDataStatistics
     unique_unmatched_free_texts: list[str]
@@ -85,16 +82,15 @@ class DeftMatcher:
     """
     Solves all your free text matching problems.
 
-    Just provide your free texts, and your ordered list of DecisiveMatchers.
+    Just provide your free texts, and your ordered list of Matchers.
 
     The .next() and the .run() functions are your friends.
     """
 
     time_started: str
-    decisive_matchers: list[DecisiveMatcher]
+    matchers: list[Matcher]
     next_index: int
     next_matcher: Matcher | None
-    next_resolver: AmbiguityResolver | None
     free_texts: list[str]
     matchings: dict[str, MatchData]
     unmatched: set[str]
@@ -104,10 +100,9 @@ class DeftMatcher:
 
     def __init__(self, config: DeftMatcherConfig, data: DeftMatcherData) -> None:
         self.time_started = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
-        self.decisive_matchers = config.decisive_matchers
+        self.matchers = config.matchers
         self.next_index = 0
         self.next_matcher = self.get_next_matcher_from_next_index()
-        self.next_resolver = self.get_next_resolver_from_next_index()
         self.free_texts = data.free_texts
         self.unmatched = set(data.free_texts)
         self.matchings = {}
@@ -118,86 +113,64 @@ class DeftMatcher:
 
     def run(self):
         """
-        Applies all DecisiveMatchers in order.
+        Applies all Matchers in order.
         """
 
-        for dm_no in range(len(self.decisive_matchers)):
+        for matcher_index in range(len(self.matchers)):
             self.next()
 
     def next(self):
         """
-        Applies the next DecisiveMatcher to the remaining unmatched strings.
+        Applies the next Matcher to the remaining unmatched strings.
         """
-        if self.no_more_matchers_or_resolvers():
-            self.logger.info(self.no_more_matchers_or_resolvers_str())
+        if self.no_more_matchers():
+            self.logger.info(self.no_more_matchers_str())
             return
 
         matcher: Matcher = self.next_matcher
-        resolver: AmbiguityResolver = self.next_resolver
 
-        self.log_new_matcher_and_resolver(
-            matcher_name=matcher.name, resolver_name=resolver.name
-        )
+        self.log_new_matcher(matcher_name=matcher.name)
 
-        self.run_decisive_matcher(matcher=matcher, resolver=resolver)
+        self.run_matcher(matcher=matcher)
 
-    def run_decisive_matcher(self, matcher: Matcher, resolver: AmbiguityResolver):
+    def run_matcher(self, matcher: Matcher):
         matcher_name = matcher.name
-        resolver_name = resolver.name
 
         solved: list[str] = []
 
         for free_text in self.unmatched:
-            matches: list[OntologyClass] = matcher.get_matches(free_text)
-            resolution: OntologyClass | None = resolver.resolve(matches)
+            possible_match: OntologyClass | None = matcher.match(free_text)
 
-            if resolution is not None:
-                self.matchings[free_text] = MatchData(
-                    resolution, matcher_name, resolver_name
-                )
+            if possible_match is not None:
+                self.matchings[free_text] = MatchData(possible_match, matcher_name)
                 solved.append(free_text)
-                self.logger.info(f"{free_text} was matched to {resolution}.")
+                self.logger.info(f"{free_text} was matched to {possible_match}.")
             else:
                 self.logger.info(f"{free_text} had no resolution.")
 
         self.update_attributes(solved_free_texts=solved)
 
-        self.log_match_info(
-            matcher_name=matcher.name, resolver_name=resolver.name, solved=solved
-        )
+        self.log_match_info(matcher_name=matcher.name, solved=solved)
 
     def get_next_matcher_from_next_index(self) -> Matcher | None:
-        if self.next_index <= len(self.decisive_matchers) - 1:
-            return self.decisive_matchers[self.next_index].matcher
+        if self.next_index <= len(self.matchers) - 1:
+            return self.matchers[self.next_index]
         else:
             return None
 
-    def get_next_resolver_from_next_index(self) -> AmbiguityResolver | None:
-        if self.next_index <= len(self.decisive_matchers) - 1:
-            return self.decisive_matchers[self.next_index].ambiguity_resolver
-        else:
-            return None
-
-    def no_more_matchers_or_resolvers(self) -> bool:
-        if self.next_matcher is None or self.next_resolver is None:
-            return True
-        else:
-            return False
+    def no_more_matchers(self) -> bool:
+        return self.next_matcher is None
 
     def update_attributes(self, solved_free_texts: list[str]):
         self.unmatched -= set(solved_free_texts)
         self.next_index += 1
         self.next_matcher = self.get_next_matcher_from_next_index()
-        self.next_resolver = self.get_next_resolver_from_next_index()
 
     # ---------------- LOADING A STATE ----------------
 
     @classmethod
     def load_state_from_files(
-        cls,
-        matching_file_path: str,
-        metadata_file_path: str,
-        decisive_matchers: list[DecisiveMatcher],
+        cls, matching_file_path: str, metadata_file_path: str, matchers: list[Matcher]
     ) -> "DeftMatcher":
         """
         Will create a new DeftMatcher object based on the data provided in the matching and metadata_file_path.
@@ -208,11 +181,10 @@ class DeftMatcher:
         obj: DeftMatcher = cls.__new__(cls)
 
         obj.time_started = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
-        obj.decisive_matchers = decisive_matchers
+        obj.matchers = matchers
         obj.next_index = 0
         obj.uuid = str(uuid4())
         obj.next_matcher = obj.get_next_matcher_from_next_index()
-        obj.next_resolver = obj.get_next_resolver_from_next_index()
         obj.logger = obj.initialise_logger()
 
         # load matchings and free_texts
@@ -240,12 +212,7 @@ class DeftMatcher:
             curie_id: str = getattr(row, "CURIE_ID")
             label: str = getattr(row, "LABEL")
             matcher: str = getattr(row, "MATCHER")
-            resolver: str = getattr(row, "RESOLVER")
-            match_data = MatchData(
-                OntologyClass(curie_id, label),
-                matcher_name=matcher,
-                resolver_name=resolver,
-            )
+            match_data = MatchData(OntologyClass(curie_id, label), matcher_name=matcher)
             matchings[free_text] = match_data
 
         obj.matchings = matchings
@@ -267,7 +234,7 @@ class DeftMatcher:
         """
 
         replacement_match_data: MatchData = MatchData(
-            match=replacement_match, matcher_name="HumanEditor", resolver_name="NA"
+            match=replacement_match, matcher_name="HumanEditor"
         )
 
         if free_text in self.matchings:
@@ -323,9 +290,7 @@ class DeftMatcher:
         Create a single new match.
         """
 
-        new_match_data: MatchData = MatchData(
-            match=match, matcher_name="HumanEditor", resolver_name="NA"
-        )
+        new_match_data: MatchData = MatchData(match=match, matcher_name="HumanEditor")
 
         if free_text in self.unmatched:
             self.matchings[free_text] = new_match_data
@@ -381,7 +346,6 @@ class DeftMatcher:
                     "CURIE_ID": data.match.curie_id,
                     "LABEL": data.match.label,
                     "MATCHER": data.matcher_name,
-                    "RESOLVER": data.resolver_name,
                 }
                 for free_text, data in self.matchings.items()
             ]
@@ -389,9 +353,7 @@ class DeftMatcher:
         return df
 
     def create_metadata(self, matching_uuid: str) -> MetaData:
-        decisive_matchers_applied: list[DecisiveMatcher] = self.decisive_matchers[
-            0 : self.next_index
-        ]
+        matchers_applied: list[Matcher] = self.matchers[0 : self.next_index]
 
         statistics = MetaDataStatistics(
             number_of_free_texts=len(self.free_texts),
@@ -404,17 +366,14 @@ class DeftMatcher:
                 1 for item in self.free_texts if item not in self.matchings
             ),
             number_of_unique_free_texts_unmatched=len(self.unmatched),
-            unique_free_texts_matched_by_decisive_matcher=self.get_unique_free_texts_by_decisive_matcher(),
+            unique_free_texts_matched_by_matcher=self.get_unique_free_texts_by_matcher(),
         )
 
         metadata = MetaData(
             data_name=self.data_name,
             time_started=self.time_started,
             time_created=datetime.now().strftime("%d-%m-%Y_%H-%M-%S"),
-            decisive_matchers=[
-                (dm.matcher.name, dm.ambiguity_resolver.name)
-                for dm in decisive_matchers_applied
-            ],
+            matchers=[matcher.name for matcher in matchers_applied],
             matching_uuid=matching_uuid,
             statistics=statistics,
             unique_unmatched_free_texts=list(self.unmatched),
@@ -422,16 +381,12 @@ class DeftMatcher:
 
         return metadata
 
-    def get_unique_free_texts_by_decisive_matcher(self) -> dict[str, int]:
+    def get_unique_free_texts_by_matcher(self) -> dict[str, int]:
         count_dict: dict[str, int] = {}
 
         for match_data in self.matchings.values():
-            decisive_matcher_name = (
-                match_data.matcher_name + "+" + match_data.resolver_name
-            )
-            count_dict[decisive_matcher_name] = (
-                count_dict.get(decisive_matcher_name, 0) + 1
-            )
+            matcher_name = match_data.matcher_name
+            count_dict[matcher_name] = count_dict.get(matcher_name, 0) + 1
 
         return count_dict
 
@@ -456,12 +411,11 @@ class DeftMatcher:
         return logger
 
     def startup_log_str(self) -> str:
-        header_str = f"Applying the DEFTMatcher pipeline to {self.data_name} with matchers and resolvers:\n"
-        matcher_resolver_str = "\n".join(
-            f"  - {dm.matcher.name} and {dm.ambiguity_resolver.name}"
-            for dm in self.decisive_matchers
+        header_str = (
+            f"Applying the DEFTMatcher pipeline to {self.data_name} with matchers:\n"
         )
-        return header_str + matcher_resolver_str
+        matcher_str = "\n".join(f"  - {matcher.name}" for matcher in self.matchers)
+        return header_str + matcher_str
 
     @staticmethod
     def startup_from_file_log_str(
@@ -469,16 +423,16 @@ class DeftMatcher:
     ) -> str:
         return f"DeftMatcher object loaded from {matching_file_path} and {metadata_file_path}"
 
-    def log_new_matcher_and_resolver(self, matcher_name: str, resolver_name: str):
+    def log_new_matcher(self, matcher_name: str):
         self.logger.info(
-            f"Applying matcher {matcher_name} and resolver {resolver_name} to {len(self.unmatched)} unmatched strings."
+            f"Applying matcher {matcher_name} to {len(self.unmatched)} unmatched strings."
         )
 
-    def log_match_info(self, matcher_name: str, resolver_name: str, solved: list[str]):
-        """Logs our progress after applying a matcher and resolver."""
+    def log_match_info(self, matcher_name: str, solved: list[str]):
+        """Logs our progress after applying a matcher."""
 
         log_parts = [
-            self.header_log_str(matcher_name, resolver_name),
+            self.header_log_str(matcher_name),
             self.solved_log_str(solved, 3),
             self.unsolved_log_str(3),
             self.footer_log_str(),
@@ -487,8 +441,8 @@ class DeftMatcher:
         self.logger.info("\n".join(log_parts))
 
     @staticmethod
-    def header_log_str(matcher_name: str, resolver_name: str) -> str:
-        return f"Matcher {matcher_name} and resolver {resolver_name} were successfully applied."
+    def header_log_str(matcher_name: str) -> str:
+        return f"Matcher {matcher_name} was successfully applied."
 
     def solved_log_str(self, solved: list[str], max_examples: int) -> str:
         num_solved = len(solved)
@@ -535,15 +489,15 @@ class DeftMatcher:
                 return f"There remain {num_unsolved} unmatched strings, for example:\n{examples_str}"
 
     def footer_log_str(self) -> str:
-        if self.no_more_matchers_or_resolvers():
-            return self.no_more_matchers_or_resolvers_str()
+        if self.no_more_matchers():
+            return self.no_more_matchers_str()
         else:
-            return f"The next matcher is {self.next_matcher.name} and the next resolver is {self.next_resolver.name}."
+            return f"The next matcher is {self.next_matcher.name}."
 
     @staticmethod
     def example_match_str(text: str, text_match: str) -> str:
         return f"'{text}' → '{text_match}'"
 
     @staticmethod
-    def no_more_matchers_or_resolvers_str() -> str:
-        return "There are no more matchers or resolvers!"
+    def no_more_matchers_str() -> str:
+        return "There are no more matchers!"

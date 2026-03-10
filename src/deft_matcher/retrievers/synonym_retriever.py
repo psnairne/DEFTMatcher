@@ -4,12 +4,12 @@ from oaklib import get_adapter
 from oaklib.datamodels.vocabulary import IS_A
 from oaklib.interfaces import OboGraphInterface
 
-from deft_matcher.matcher import Matcher
-from deft_matcher.matchers.utils import validate_file_path_has_version_and_return
+from deft_matcher.retriever import Retriever
+from deft_matcher.utils import validate_file_path_has_version_and_return
 from deft_matcher.ontology_class import OntologyClass
 
 
-class SynonymMatcher(Matcher):
+class SynonymRetriever(Retriever):
     """
     If a synonym of an ontology term matches the free text,
     then that term is added to the output of get_matches.
@@ -66,7 +66,7 @@ class SynonymMatcher(Matcher):
 
     @property
     def name(self) -> str:
-        return f"SynonymMatcher({self.ontology_prefix.upper()})"
+        return f"SynonymRetriever({self.ontology_prefix.upper()})"
 
     def get_matches(self, free_text: str) -> list[OntologyClass]:
         possible_matches = self._syn_to_terms.get(free_text.lower())

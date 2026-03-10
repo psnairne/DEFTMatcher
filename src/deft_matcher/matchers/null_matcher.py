@@ -16,5 +16,5 @@ class NullMatcher(Matcher):
     def name(self) -> str:
         return "NullMatcher"
 
-    def get_matches(self, free_text: str) -> list[OntologyClass]:
-        return [self.null_ontology_class]
+    def match(self, free_text: str) -> OntologyClass | None:
+        return self.null_ontology_class

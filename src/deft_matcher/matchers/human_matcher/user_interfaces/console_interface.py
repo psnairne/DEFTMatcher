@@ -2,7 +2,7 @@ from oaklib import get_adapter
 from oaklib.datamodels.vocabulary import IS_A
 from oaklib.interfaces import OboGraphInterface
 
-from deft_matcher.matchers.utils import validate_file_path_has_version_and_return
+from deft_matcher.utils import validate_file_path_has_version_and_return
 from deft_matcher.ontology_class import OntologyClass
 from deft_matcher.matchers.human_matcher.user_interfaces.user_interface import (
     UserInterface,

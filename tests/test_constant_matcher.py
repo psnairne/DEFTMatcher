@@ -15,7 +15,6 @@ def constant_matcher(oc: OntologyClass) -> ConstantMatcher:
 
 
 def test_constant_matcher(constant_matcher: ConstantMatcher, oc: OntologyClass):
-    match = constant_matcher.get_matches("Asthma")
+    match = constant_matcher.match("Asthma")
 
-    assert len(match) == 1
-    assert match[0] == oc
+    assert match == oc

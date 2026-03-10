@@ -1,19 +1,19 @@
 import pytest
+
 from deft_matcher.matchers.human_matcher.human_matcher import HumanMatcher
 from deft_matcher.matchers.human_matcher.user_interfaces.mock_interface import (
     MockInterface,
 )
 from deft_matcher.ontology_class import OntologyClass
-from scripts.fixtures import hpo_syn_matcher
+from scripts.fixtures import hpo_syn_retriever
 
 
 @pytest.fixture
 def human_matcher():
-    return HumanMatcher(MockInterface(), hpo_syn_matcher())
+    return HumanMatcher(MockInterface(), hpo_syn_retriever())
 
 
 def test_human_matcher(human_matcher):
-    osthma_matches = human_matcher.get_matches("Osthma")
+    osthma_match = human_matcher.match("Osthma")
 
-    assert len(osthma_matches) == 1
-    assert osthma_matches[0] == OntologyClass("HP:0002099", "Asthma")
+    assert osthma_match == OntologyClass("HP:0002099", "Asthma")

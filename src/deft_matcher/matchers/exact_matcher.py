@@ -3,7 +3,7 @@ from typing import Iterable
 from oaklib.interfaces import OboGraphInterface
 
 from deft_matcher.matcher import Matcher
-from deft_matcher.matchers.utils import validate_file_path_has_version_and_return
+from deft_matcher.utils import validate_file_path_has_version_and_return
 from deft_matcher.ontology_class import OntologyClass
 
 from oaklib import get_adapter
@@ -59,6 +59,5 @@ class ExactMatcher(Matcher):
     def name(self) -> str:
         return f"ExactMatcher({self.ontology_prefix.upper()})"
 
-    def get_matches(self, free_text: str) -> list[OntologyClass]:
-        possible_match: str | None = self._label_to_term.get(free_text.lower())
-        return [] if possible_match is None else [possible_match]
+    def match(self, free_text: str) -> OntologyClass | None:
+        return self._label_to_term.get(free_text.lower())

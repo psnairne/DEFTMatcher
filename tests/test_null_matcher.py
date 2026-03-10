@@ -10,7 +10,6 @@ def null_matcher() -> NullMatcher:
 
 
 def test_null_matcher(null_matcher: NullMatcher):
-    null_match = null_matcher.get_matches("Asthma")
+    null_match = null_matcher.match("Asthma")
 
-    assert len(null_match) == 1
-    assert null_match[0] == OntologyClass("", "")
+    assert null_match == OntologyClass("", "")

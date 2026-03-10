@@ -9,14 +9,14 @@ from oaklib.datamodels.vocabulary import IS_A
 from oaklib.interfaces import OboGraphInterface
 from pandas import DataFrame, Series
 
-from deft_matcher.matcher import Matcher
+from deft_matcher.retriever import Retriever
 from pathlib import Path
 
-from deft_matcher.matchers.utils import validate_file_path_has_version_and_return
+from deft_matcher.utils import validate_file_path_has_version_and_return
 from deft_matcher.ontology_class import OntologyClass
 
 
-class FastHPOCRMatcher(Matcher):
+class FastHPOCRRetriever(Retriever):
     """
     Uses the FastHPOCR algorithm and library to match text to HPO terms.
     See:
@@ -92,7 +92,7 @@ class FastHPOCRMatcher(Matcher):
 
     @property
     def name(self) -> str:
-        return "FastHPOCRMatcher"
+        return "FastHPOCRetriever"
 
     def get_matches(self, free_text: str) -> list[OntologyClass]:
         annotations = self._annotator.annotate(free_text)
