@@ -19,7 +19,7 @@ class CombinedMatcher(Matcher):
 
     @property
     def name(self) -> str:
-        return self.name
+        return self.matcher_name
 
     def match(self, free_text: str) -> OntologyClass | None:
         candidates: list[OntologyClass] = self.retriever.get_matches(free_text)

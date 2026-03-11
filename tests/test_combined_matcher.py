@@ -7,7 +7,9 @@ def test_combined_matcher():
     retriever = hpo_syn_retriever()
     resolver = choose_first_resolver()
 
-    combined_matcher = CombinedMatcher(retriever, resolver)
+    combined_matcher = CombinedMatcher(
+        retriever, resolver, matcher_name="SynonymMatcher(HP)"
+    )
 
     asd_match = combined_matcher.match("ASD")
 
