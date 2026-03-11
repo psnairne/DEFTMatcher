@@ -168,7 +168,7 @@ def hpo_vec_similarity_matcher() -> VectorSimilarityMatcher:
         embedding_path=hpo_embedding_path(),
         embedding_metadata_path=hpo_embedding_metadata_path(),
         embedding_model_path=embedding_model_path(),
-        similarity_threshold=0.6,
+        similarity_threshold=0.7,
         ontology_obo_path=hpo_obo_path(),
         ontology_prefix="hp",
         # phenotypic abnormality
@@ -209,16 +209,20 @@ def mondo_console_interface() -> ConsoleInterface:
 
 
 def hpo_syn_matcher() -> Matcher:
-    return CombinedMatcher(hpo_syn_retriever(), choose_first())
+    return CombinedMatcher(hpo_syn_retriever(), choose_first(), "SynonymMatcher(HP)")
 
 
 def mondo_syn_matcher() -> Matcher:
-    return CombinedMatcher(mondo_syn_retriever(), choose_first())
+    return CombinedMatcher(
+        mondo_syn_retriever(), choose_first(), "SynonymMatcher(MONDO)"
+    )
 
 
 def fast_hpo_cr_matcher() -> Matcher:
-    return CombinedMatcher(fast_hpo_cr_retriever(), choose_first())
+    return CombinedMatcher(fast_hpo_cr_retriever(), choose_first(), "FastHPOCRMatcher")
 
 
 def fast_mondo_cr_matcher() -> Matcher:
-    return CombinedMatcher(fast_mondo_cr_retriever(), choose_first())
+    return CombinedMatcher(
+        fast_mondo_cr_retriever(), choose_first(), "FastMONDOCRMatcher"
+    )
