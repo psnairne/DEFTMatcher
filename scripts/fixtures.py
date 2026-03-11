@@ -209,7 +209,9 @@ def mondo_console_interface() -> ConsoleInterface:
 
 
 def hpo_syn_matcher() -> Matcher:
-    return CombinedMatcher(hpo_syn_retriever(), choose_first_resolver(), "SynonymMatcher(HP)")
+    return CombinedMatcher(
+        hpo_syn_retriever(), choose_first_resolver(), "SynonymMatcher(HP)"
+    )
 
 
 def mondo_syn_matcher() -> Matcher:
@@ -219,7 +221,9 @@ def mondo_syn_matcher() -> Matcher:
 
 
 def fast_hpo_cr_matcher() -> Matcher:
-    return CombinedMatcher(fast_hpo_cr_retriever(), choose_first_resolver(), "FastHPOCRMatcher")
+    return CombinedMatcher(
+        fast_hpo_cr_retriever(), choose_first_resolver(), "FastHPOCRMatcher"
+    )
 
 
 def fast_mondo_cr_matcher() -> Matcher:
