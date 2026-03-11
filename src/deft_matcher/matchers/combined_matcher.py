@@ -7,17 +7,19 @@ from deft_matcher.retriever import Retriever
 class CombinedMatcher(Matcher):
     retriever: Retriever
     resolver: Resolver
+    name: str
 
-    def __init__(self, retriever: Retriever, resolver: Resolver):
+    def __init__(self, retriever: Retriever, resolver: Resolver, matcher_name: str):
         """
         Combines a Retriever and a Resolver to create a Matcher.
         """
         self.retriever = retriever
         self.resolver = resolver
+        self.matcher_name = matcher_name
 
     @property
     def name(self) -> str:
-        return self.retriever.name + "+" + self.resolver.name
+        return self.matcher_name
 
     def match(self, free_text: str) -> OntologyClass | None:
         candidates: list[OntologyClass] = self.retriever.get_matches(free_text)

@@ -112,13 +112,15 @@ def fast_mondo_cr_retriever() -> FastMONDOCRRetriever:
     )
 
 
-def hpo_vec_similarity_retriever() -> VectorSimilarityRetriever:
+def hpo_vec_similarity_retriever(
+    similarity_threshold: float, number_of_candidates: int
+) -> VectorSimilarityRetriever:
     return VectorSimilarityRetriever(
         embedding_path=hpo_embedding_path(),
         embedding_metadata_path=hpo_embedding_metadata_path(),
         embedding_model_path=embedding_model_path(),
-        similarity_threshold=0,
-        max_candidates=5,
+        similarity_threshold=similarity_threshold,
+        max_candidates=number_of_candidates,
         ontology_obo_path=hpo_obo_path(),
         ontology_prefix="hp",
         # phenotypic abnormality
@@ -163,12 +165,12 @@ def maxo_exact_matcher():
     )
 
 
-def hpo_vec_similarity_matcher() -> VectorSimilarityMatcher:
+def hpo_vec_similarity_matcher(similarity_threshold: float) -> VectorSimilarityMatcher:
     return VectorSimilarityMatcher(
         embedding_path=hpo_embedding_path(),
         embedding_metadata_path=hpo_embedding_metadata_path(),
         embedding_model_path=embedding_model_path(),
-        similarity_threshold=0.6,
+        similarity_threshold=similarity_threshold,
         ontology_obo_path=hpo_obo_path(),
         ontology_prefix="hp",
         # phenotypic abnormality
@@ -176,8 +178,13 @@ def hpo_vec_similarity_matcher() -> VectorSimilarityMatcher:
     )
 
 
-def hpo_human_matcher() -> HumanMatcher:
-    return HumanMatcher(hpo_console_interface(), hpo_vec_similarity_retriever())
+def hpo_human_matcher(number_of_candidates: int) -> HumanMatcher:
+    return HumanMatcher(
+        hpo_console_interface(),
+        hpo_vec_similarity_retriever(
+            similarity_threshold=0, number_of_candidates=number_of_candidates
+        ),
+    )
 
 
 def null_matcher() -> NullMatcher:
@@ -209,16 +216,24 @@ def mondo_console_interface() -> ConsoleInterface:
 
 
 def hpo_syn_matcher() -> Matcher:
-    return CombinedMatcher(hpo_syn_retriever(), choose_first_resolver())
+    return CombinedMatcher(
+        hpo_syn_retriever(), choose_first_resolver(), "SynonymMatcher(HP)"
+    )
 
 
 def mondo_syn_matcher() -> Matcher:
-    return CombinedMatcher(mondo_syn_retriever(), choose_first_resolver())
+    return CombinedMatcher(
+        mondo_syn_retriever(), choose_first_resolver(), "SynonymMatcher(MONDO)"
+    )
 
 
 def fast_hpo_cr_matcher() -> Matcher:
-    return CombinedMatcher(fast_hpo_cr_retriever(), choose_first_resolver())
+    return CombinedMatcher(
+        fast_hpo_cr_retriever(), choose_first_resolver(), "FastHPOCRMatcher"
+    )
 
 
 def fast_mondo_cr_matcher() -> Matcher:
-    return CombinedMatcher(fast_mondo_cr_retriever(), choose_first_resolver())
+    return CombinedMatcher(
+        fast_mondo_cr_retriever(), choose_first_resolver(), "FastMONDOCRMatcher"
+    )
