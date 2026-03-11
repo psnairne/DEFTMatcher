@@ -98,7 +98,7 @@ class DeftMatcher:
     logger: Logger
     data_name: str
 
-    def __init__(self, config: DeftMatcherConfig, data: DeftMatcherData) -> None:
+    def __init__(self, data: DeftMatcherData, config: DeftMatcherConfig) -> None:
         self.time_started = datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
         self.matchers = config.matchers
         self.next_index = 0
