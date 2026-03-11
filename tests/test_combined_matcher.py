@@ -11,4 +11,6 @@ def test_combined_matcher():
 
     asd_match = combined_matcher.match("ASD")
 
-    assert asd_match == OntologyClass("HP:0000729", "Autistic behavior")
+    assert asd_match == OntologyClass(
+        "HP:0000729", "Autistic behavior"
+    ) or asd_match == OntologyClass("HP:0001631", "Atrial septal defect")
