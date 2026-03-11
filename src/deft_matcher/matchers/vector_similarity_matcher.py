@@ -54,7 +54,7 @@ class VectorSimilarityMatcher(Matcher):
 
     @property
     def name(self) -> str:
-        return f"VectorSimilarityMatcher({self.ontology_prefix.upper()})"
+        return f"VectorSimilarityMatcher({self.ontology_prefix.upper()},{self.similarity_threshold})"
 
     def match(self, free_text: str) -> OntologyClass | None:
         candidates: list[OntologyClass] = self._vector_similarity_retriever.get_matches(
