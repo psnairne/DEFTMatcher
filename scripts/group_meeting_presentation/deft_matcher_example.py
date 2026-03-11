@@ -20,8 +20,8 @@ def main():
         matchers=[
             hpo_exact_matcher(),
             hpo_syn_matcher(),
-            hpo_vec_similarity_matcher(),
-            hpo_human_matcher(),
+            hpo_vec_similarity_matcher(similarity_threshold=0.7),
+            hpo_human_matcher(number_of_candidates=5),
         ]
     )
 
