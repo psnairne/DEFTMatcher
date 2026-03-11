@@ -2,7 +2,6 @@ from deft_matcher.matchers.combined_matcher import CombinedMatcher
 from deft_matcher.matchers.human_matcher.human_matcher import HumanMatcher
 from deft_matcher.matchers.vector_similarity_matcher import VectorSimilarityMatcher
 from deft_matcher.resolvers.choose_first_resolver import ChooseFirstResolver
-from deft_matcher.matcher import Matcher
 from deft_matcher.matchers.exact_matcher import ExactMatcher
 from deft_matcher.retrievers.fast_hpo_cr_retriever import FastHPOCRRetriever
 from deft_matcher.retrievers.fast_mondo_cr_retriever import FastMONDOCRRetriever
@@ -215,25 +214,25 @@ def mondo_console_interface() -> ConsoleInterface:
 # ---COMBINED_MATCHERS---
 
 
-def hpo_syn_matcher() -> Matcher:
+def hpo_syn_matcher() -> CombinedMatcher:
     return CombinedMatcher(
         hpo_syn_retriever(), choose_first_resolver(), "SynonymMatcher(HP)"
     )
 
 
-def mondo_syn_matcher() -> Matcher:
+def mondo_syn_matcher() -> CombinedMatcher:
     return CombinedMatcher(
         mondo_syn_retriever(), choose_first_resolver(), "SynonymMatcher(MONDO)"
     )
 
 
-def fast_hpo_cr_matcher() -> Matcher:
+def fast_hpo_cr_matcher() -> CombinedMatcher:
     return CombinedMatcher(
         fast_hpo_cr_retriever(), choose_first_resolver(), "FastHPOCRMatcher"
     )
 
 
-def fast_mondo_cr_matcher() -> Matcher:
+def fast_mondo_cr_matcher() -> CombinedMatcher:
     return CombinedMatcher(
         fast_mondo_cr_retriever(), choose_first_resolver(), "FastMONDOCRMatcher"
     )
