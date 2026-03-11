@@ -16,11 +16,7 @@ def main():
         data_name="messy_immune_disease_data",
     )
     config = DeftMatcherConfig(
-        matchers=[
-            hpo_exact_matcher(),
-            hpo_syn_matcher(),
-            hpo_vec_similarity_matcher(),
-        ]
+        matchers=[hpo_exact_matcher(), hpo_syn_matcher(), hpo_vec_similarity_matcher()]
     )
 
     deft_matcher = DeftMatcher(config=config, data=data)
