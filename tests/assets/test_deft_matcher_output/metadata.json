@@ -2,11 +2,8 @@
   "data_name": "example_data",
   "time_started": "24-02-2026_10-38-33",
   "time_created": "24-02-2026_10-38-33",
-  "decisive_matchers": [
-    [
-      "ExactMatcher(HP)",
-      "ChooseFirstResolver"
-    ]
+  "matchers": [
+    "ExactMatcher(HP)"
   ],
   "matching_uuid": "41fa0d85-4d84-4a4b-8bf2-b292ae6b50c0",
   "statistics": {
@@ -16,8 +13,8 @@
     "number_of_unique_free_texts_matched": 2,
     "number_of_free_texts_unmatched": 3,
     "number_of_unique_free_texts_unmatched": 2,
-    "unique_free_texts_matched_by_decisive_matcher": {
-      "ExactMatcher(HP)+ChooseFirstResolver": 2
+    "unique_free_texts_matched_by_matcher": {
+      "ExactMatcher(HP)": 2
     }
   },
   "unique_unmatched_free_texts": [
