@@ -9,13 +9,13 @@ class CombinedMatcher(Matcher):
     resolver: Resolver
     name: str
 
-    def __init__(self, retriever: Retriever, resolver: Resolver, name: str):
+    def __init__(self, retriever: Retriever, resolver: Resolver, matcher_name: str):
         """
         Combines a Retriever and a Resolver to create a Matcher.
         """
         self.retriever = retriever
         self.resolver = resolver
-        self.name = name
+        self.matcher_name = matcher_name
 
     @property
     def name(self) -> str:
