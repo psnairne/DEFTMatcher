@@ -8,7 +8,7 @@ from numpy import ndarray
 from sentence_transformers import SentenceTransformer
 
 
-class CandidateRetriever:
+class VectorEmbedder:
     """
     Sets up a FAISS index for an ontology vector embedding.
 

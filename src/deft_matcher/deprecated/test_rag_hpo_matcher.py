@@ -1,17 +1,17 @@
 # import pytest
-# from deft_matcher.matchers.deprecated.rag_hpo_matcher import RagHpoMatcher
+# from deft_matcher.matchers_and_retrievers.deprecated.rag_hpo_matcher import RagHpoMatcher
 # from deft_matcher.ontology_class import OntologyClass
 #
 # def rag_hpo_matcher():
 #     model_name = "llama3.2"
 #     embedded_hpo_path = (
-#         "/deft_matcher/matchers/vector_similarity_matcher/data/hpo_embedded.npz"
+#         "/deft_matcher/matchers_and_retrievers/vector_similarity_retriever/data/hpo_embedded.npz"
 #     )
 #     embedding_metadata_path = (
-#         "/deft_matcher/matchers/vector_similarity_matcher/data/hpo_meta.json"
+#         "/deft_matcher/matchers_and_retrievers/vector_similarity_retriever/data/hpo_meta.json"
 #     )
 #     embedding_model_path = (
-#         "/deft_matcher/matchers/vector_similarity_matcher/sbert_model"
+#         "/deft_matcher/matchers_and_retrievers/vector_similarity_retriever/sbert_model"
 #     )
 #     return RagHpoMatcher(
 #         model_name=model_name,

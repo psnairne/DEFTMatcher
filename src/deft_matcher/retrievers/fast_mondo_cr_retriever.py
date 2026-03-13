@@ -9,14 +9,14 @@ from oaklib.datamodels.vocabulary import IS_A
 from oaklib.interfaces import OboGraphInterface
 from pandas import DataFrame, Series
 
-from deft_matcher.matcher import Matcher
+from deft_matcher.retriever import Retriever
 from pathlib import Path
 
-from deft_matcher.matchers.utils import validate_file_path_has_version_and_return
+from deft_matcher.utils import validate_file_path_has_version_and_return
 from deft_matcher.ontology_class import OntologyClass
 
 
-class FastMONDOCRMatcher(Matcher):
+class FastMONDOCRRetriever(Retriever):
     """
     Uses the FastHPOCR algorithm and library to match text to MONDO terms.
     See:
@@ -95,7 +95,7 @@ class FastMONDOCRMatcher(Matcher):
 
     @property
     def name(self) -> str:
-        return "FastMONDOCRMatcher"
+        return "FastMONDOCRRetriever"
 
     def get_matches(self, free_text: str) -> list[OntologyClass]:
         annotations = self._annotator.annotate(free_text)

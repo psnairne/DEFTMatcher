@@ -3,16 +3,16 @@ from abc import ABC, abstractmethod
 from deft_matcher.ontology_class import OntologyClass
 
 
-class AmbiguityResolver(ABC):
+class Resolver(ABC):
     """
-    When a matcher returns a list of possible matches, the job of an AmbiguityResolver
+    When a matcher returns a list of possible matches, the job of an Resolver
     is to choose exactly one of those.
     """
 
     @property
     @abstractmethod
     def name(self) -> str:
-        """Each ambiguity resolver must have a 'name' attribute."""
+        """Each resolver must have a 'name' attribute."""
         pass
 
     @abstractmethod

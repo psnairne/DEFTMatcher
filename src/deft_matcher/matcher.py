@@ -5,7 +5,7 @@ from deft_matcher.ontology_class import OntologyClass
 
 class Matcher(ABC):
     """
-    Matches a free text to a list of possible OntologyClass candidates.
+    The method match can match a free text to an OntologyClass. Or it can return None.
     """
 
     @property
@@ -15,6 +15,6 @@ class Matcher(ABC):
         pass
 
     @abstractmethod
-    def get_matches(self, free_text: str) -> list[OntologyClass]:
-        """Return matching ontology IDs for the given free text."""
+    def match(self, free_text: str) -> OntologyClass | None:
+        """Attempt to match the free text to an OntologyClass."""
         raise NotImplementedError
