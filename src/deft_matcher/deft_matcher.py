@@ -228,6 +228,37 @@ class DeftMatcher:
 
     # ---------------- EDITING A STATE -------------------
 
+    def apply_matchings_in_csv(self, matching_file_path: str):
+        self.logger.info(
+            f"Applying the aliases found in {matching_file_path} to the unmatched strings."
+        )
+
+        matching_csv_df: DataFrame = pd.read_csv(matching_file_path)
+        matching_csv_df.itertuples()
+
+        matchings_from_csv: dict[str, MatchData] = {}
+
+        for row in matching_csv_df.itertuples(index=False, name="Row"):
+            free_text: str = getattr(row, "FREE_TEXT")
+            curie_id: str = getattr(row, "CURIE_ID")
+            label: str = getattr(row, "LABEL")
+            matcher: str = getattr(row, "MATCHER")
+            match_data = MatchData(OntologyClass(curie_id, label), matcher_name=matcher)
+            matchings_from_csv[free_text] = match_data
+
+        solved: list[str] = []
+
+        for free_text in self.unmatched:
+            possible_match: MatchData | None = matchings_from_csv.get(free_text)
+            if possible_match is not None:
+                self.matchings[free_text] = possible_match
+                solved.append(free_text)
+                self.logger.info(f"{free_text} was matched to {possible_match.match}.")
+            else:
+                self.logger.info(f"{free_text} was not found in the matchings.csv.")
+
+        self.unmatched -= set(solved)
+
     def rematch(self, free_text: str, replacement_match: OntologyClass) -> None:
         """
         This is used to alter a single matching.
