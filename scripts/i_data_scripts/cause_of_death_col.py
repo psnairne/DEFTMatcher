@@ -8,7 +8,6 @@ def cods() -> list[str]:
     dfs = pd.read_excel("/Users/patrick/Downloads/I_DATA/i_data.xlsx", sheet_name=None)
     cohort_df = dfs["Cohort"]
     cod_col = cohort_df["Cause of Death"]
-    cod_col = cod_col.dropna()
     return list(cod_col)
 
 
