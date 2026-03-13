@@ -1,12 +1,7 @@
 from pathlib import Path
 import pandas as pd
 from deft_matcher.deft_matcher import DeftMatcher, DeftMatcherConfig, DeftMatcherData
-from scripts.fixtures import (
-    mondo_exact_dm,
-    mondo_syn_dm,
-    human_dm_mondo,
-    mondo_vector_similarity_dm,
-)
+from scripts.fixtures import mondo_exact_matcher, mondo_syn_matcher
 
 
 def cancers() -> list[str]:
@@ -17,14 +12,7 @@ def cancers() -> list[str]:
 
 
 def main():
-    config = DeftMatcherConfig(
-        decisive_matchers=[
-            mondo_exact_dm(),
-            mondo_syn_dm(),
-            mondo_vector_similarity_dm(),
-            human_dm_mondo(),
-        ]
-    )
+    config = DeftMatcherConfig(matchers=[mondo_exact_matcher(), mondo_syn_matcher()])
 
     data = DeftMatcherData(free_texts=cancers(), data_name="IDATA_CANCER")
 
