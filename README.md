@@ -1,3 +1,3 @@
 ## DEFTMatcher
 
-Dextrous and Extendable Free Text Matcher
+Dextrous and Extensible Free Text Matcher
