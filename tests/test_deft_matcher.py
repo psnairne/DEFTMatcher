@@ -236,3 +236,15 @@ def test_bulk_match_fail(example_oc, test_matchings_path, test_metadata_path):
 
     with pytest.raises(KeyError):
         deft_matcher.bulk_match({"osthma": example_oc, "pneumonia": example_oc})
+
+
+def test_apply_matchings_in_csv(conditions, test_matchings_path):
+    config = DeftMatcherConfig(matchers=[hpo_exact_matcher()])
+    data = DeftMatcherData(free_texts=conditions, data_name="example_data")
+
+    deft_matcher = DeftMatcher(config=config, data=data)
+
+    deft_matcher.apply_matchings_in_csv(test_matchings_path)
+
+    assert len(deft_matcher.matchings) == 2
+    assert len(deft_matcher.unmatched) == 2
