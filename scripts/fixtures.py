@@ -82,6 +82,20 @@ def mondo_embedding_metadata_path() -> str:
     )
 
 
+def maxo_embedding_path() -> str:
+    return (
+        get_project_root_str()
+        + "/tests/assets/vector_similarity_matcher_data/maxo/maxo_embeddings.npz"
+    )
+
+
+def maxo_embedding_metadata_path() -> str:
+    return (
+        get_project_root_str()
+        + "/tests/assets/vector_similarity_matcher_data/maxo/maxo_meta.json"
+    )
+
+
 def hgnc_embedding_path() -> str:
     return (
         get_project_root_str()
@@ -215,6 +229,22 @@ def mondo_vec_similarity_retriever(
     )
 
 
+def maxo_vec_similarity_retriever(
+    similarity_threshold: float, number_of_candidates: int
+) -> VectorSimilarityRetriever:
+    return VectorSimilarityRetriever(
+        embedding_path=maxo_embedding_path(),
+        embedding_metadata_path=maxo_embedding_metadata_path(),
+        embedding_model_path=embedding_model_path(),
+        similarity_threshold=similarity_threshold,
+        max_candidates=number_of_candidates,
+        ontology_obo_path=maxo_obo_path(),
+        ontology_prefix="maxo",
+        # medical action
+        root_term="MAXO:0000001",
+    )
+
+
 def hgnc_vec_similarity_retriever(
     similarity_threshold: float, number_of_candidates: int
 ) -> VectorSimilarityRetriever:
@@ -330,6 +360,19 @@ def mondo_vec_similarity_matcher(
     )
 
 
+def maxo_vec_similarity_matcher(similarity_threshold: float) -> VectorSimilarityMatcher:
+    return VectorSimilarityMatcher(
+        embedding_path=maxo_embedding_path(),
+        embedding_metadata_path=maxo_embedding_metadata_path(),
+        embedding_model_path=embedding_model_path(),
+        similarity_threshold=similarity_threshold,
+        ontology_obo_path=maxo_obo_path(),
+        ontology_prefix="maxo",
+        # medical action
+        root_term="MAXO:0000001",
+    )
+
+
 def ncit_vec_similarity_matcher(similarity_threshold: float) -> VectorSimilarityMatcher:
     return VectorSimilarityMatcher(
         embedding_path=ncit_embedding_path(),
@@ -370,6 +413,15 @@ def hgnc_human_matcher(number_of_candidates: int) -> HumanMatcher:
     )
 
 
+def maxo_human_matcher(number_of_candidates: int) -> HumanMatcher:
+    return HumanMatcher(
+        maxo_console_interface(),
+        maxo_vec_similarity_retriever(
+            similarity_threshold=0, number_of_candidates=number_of_candidates
+        ),
+    )
+
+
 def ncit_human_matcher(number_of_candidates: int) -> HumanMatcher:
     return HumanMatcher(
         ncit_console_interface(),
@@ -404,6 +456,15 @@ def mondo_console_interface() -> ConsoleInterface:
     )
 
 
+def maxo_console_interface() -> ConsoleInterface:
+    return ConsoleInterface(
+        ontology_prefix="maxo",
+        ontology_obo_path=maxo_obo_path(),
+        # medical action
+        root_term="MAXO:0000001",
+    )
+
+
 def hgnc_console_interface() -> ConsoleInterface:
     return ConsoleInterface(
         ontology_prefix="hgnc",
@@ -434,6 +495,12 @@ def hpo_syn_matcher() -> CombinedMatcher:
 def mondo_syn_matcher() -> CombinedMatcher:
     return CombinedMatcher(
         mondo_syn_retriever(), choose_first_resolver(), "SynonymMatcher(MONDO)"
+    )
+
+
+def maxo_syn_matcher() -> CombinedMatcher:
+    return CombinedMatcher(
+        maxo_syn_retriever(), choose_first_resolver(), "SynonymMatcher(MAXO)"
     )
 
 

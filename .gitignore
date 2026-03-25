@@ -199,6 +199,7 @@ cython_debug/
 _version.py
 /tests/assets/vector_similarity_matcher_data/hpo/
 /tests/assets/vector_similarity_matcher_data/mondo/
+/tests/assets/vector_similarity_matcher_data/maxo/
 /tests/assets/vector_similarity_matcher_data/hgnc/
 /tests/assets/vector_similarity_matcher_data/ncit/
 /tests/assets/vector_similarity_matcher_data/sbert_model/
