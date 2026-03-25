@@ -4,11 +4,9 @@ from deft_matcher.deft_matcher import DeftMatcher, DeftMatcherConfig, DeftMatche
 from scripts.fixtures import (
     mondo_exact_matcher,
     mondo_syn_matcher,
-    fast_mondo_cr_matcher,
-    hpo_exact_matcher,
-    hpo_syn_matcher,
-    fast_hpo_cr_matcher,
-    hpo_vec_similarity_matcher,
+    mondo_vec_similarity_matcher,
+    mondo_human_matcher,
+    null_matcher,
 )
 
 
@@ -24,17 +22,19 @@ def main():
         matchers=[
             mondo_exact_matcher(),
             mondo_syn_matcher(),
-            fast_mondo_cr_matcher(),
-            hpo_exact_matcher(),
-            hpo_syn_matcher(),
-            fast_hpo_cr_matcher(),
-            hpo_vec_similarity_matcher(similarity_threshold=0.7),
+            mondo_vec_similarity_matcher(similarity_threshold=0.6),
+            mondo_human_matcher(5),
+            null_matcher(),
         ]
     )
 
     data = DeftMatcherData(free_texts=infections(), data_name="IDATA_INFECTIONS")
 
     infections_normaliser = DeftMatcher(config=config, data=data)
+
+    infections_normaliser.apply_matchings_in_csv(
+        "/Users/patrick/Downloads/I_DATA/alias_csv_files/infections_just_mondo_matchings/matchings.csv"
+    )
 
     infections_normaliser.run()
     infections_normaliser.output_results(

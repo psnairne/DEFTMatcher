@@ -44,6 +44,12 @@ def hgnc_obo_path() -> str:
     )
 
 
+def ncit_obo_path() -> str:
+    return (
+        get_project_root_str() + "/tests/assets/ontology_obo_files/ncit_v2026-03-19.obo"
+    )
+
+
 def fast_hpo_cr_asset_dir() -> str:
     return get_project_root_str() + "/tests/assets/fast_hpo_cr_data"
 
@@ -62,6 +68,20 @@ def hpo_embedding_metadata_path() -> str:
     )
 
 
+def mondo_embedding_path() -> str:
+    return (
+        get_project_root_str()
+        + "/tests/assets/vector_similarity_matcher_data/mondo/mondo_embeddings.npz"
+    )
+
+
+def mondo_embedding_metadata_path() -> str:
+    return (
+        get_project_root_str()
+        + "/tests/assets/vector_similarity_matcher_data/mondo/mondo_meta.json"
+    )
+
+
 def hgnc_embedding_path() -> str:
     return (
         get_project_root_str()
@@ -73,6 +93,20 @@ def hgnc_embedding_metadata_path() -> str:
     return (
         get_project_root_str()
         + "/tests/assets/vector_similarity_matcher_data/hgnc/hgnc_meta.json"
+    )
+
+
+def ncit_embedding_path() -> str:
+    return (
+        get_project_root_str()
+        + "/tests/assets/vector_similarity_matcher_data/ncit/ncit_embeddings.npz"
+    )
+
+
+def ncit_embedding_metadata_path() -> str:
+    return (
+        get_project_root_str()
+        + "/tests/assets/vector_similarity_matcher_data/ncit/ncit_meta.json"
     )
 
 
@@ -122,6 +156,15 @@ def hgnc_syn_retriever():
     )
 
 
+def ncit_syn_retriever():
+    return SynonymRetriever(
+        "ncit",
+        ncit_obo_path(),
+        # root
+        "NCIT:C14250",
+    )
+
+
 def fast_hpo_cr_retriever() -> FastHPOCRRetriever:
     return FastHPOCRRetriever(
         hpo_obo_path=hpo_obo_path(),
@@ -156,6 +199,22 @@ def hpo_vec_similarity_retriever(
     )
 
 
+def mondo_vec_similarity_retriever(
+    similarity_threshold: float, number_of_candidates: int
+) -> VectorSimilarityRetriever:
+    return VectorSimilarityRetriever(
+        embedding_path=mondo_embedding_path(),
+        embedding_metadata_path=mondo_embedding_metadata_path(),
+        embedding_model_path=embedding_model_path(),
+        similarity_threshold=similarity_threshold,
+        max_candidates=number_of_candidates,
+        ontology_obo_path=mondo_obo_path(),
+        ontology_prefix="mondo",
+        # disease
+        root_term="MONDO:0000001",
+    )
+
+
 def hgnc_vec_similarity_retriever(
     similarity_threshold: float, number_of_candidates: int
 ) -> VectorSimilarityRetriever:
@@ -169,6 +228,22 @@ def hgnc_vec_similarity_retriever(
         ontology_prefix="hgnc",
         # protein coding gene
         root_term="SO:0001217",
+    )
+
+
+def ncit_vec_similarity_retriever(
+    similarity_threshold: float, number_of_candidates: int
+) -> VectorSimilarityRetriever:
+    return VectorSimilarityRetriever(
+        embedding_path=ncit_embedding_path(),
+        embedding_metadata_path=ncit_embedding_metadata_path(),
+        embedding_model_path=embedding_model_path(),
+        similarity_threshold=similarity_threshold,
+        max_candidates=number_of_candidates,
+        ontology_obo_path=ncit_obo_path(),
+        ontology_prefix="ncit",
+        # organism
+        root_term="NCIT:C14250",
     )
 
 
@@ -196,7 +271,7 @@ def mondo_exact_matcher():
         "mondo",
         mondo_obo_path(),
         # disease
-        "HP:0000001",
+        "MONDO:0000001",
     )
 
 
@@ -218,6 +293,15 @@ def hgnc_exact_matcher():
     )
 
 
+def ncit_exact_matcher():
+    return ExactMatcher(
+        "ncit",
+        ncit_obo_path(),
+        # organism
+        "NCIT:C14250",
+    )
+
+
 def hpo_vec_similarity_matcher(similarity_threshold: float) -> VectorSimilarityMatcher:
     return VectorSimilarityMatcher(
         embedding_path=hpo_embedding_path(),
@@ -231,6 +315,34 @@ def hpo_vec_similarity_matcher(similarity_threshold: float) -> VectorSimilarityM
     )
 
 
+def mondo_vec_similarity_matcher(
+    similarity_threshold: float,
+) -> VectorSimilarityMatcher:
+    return VectorSimilarityMatcher(
+        embedding_path=mondo_embedding_path(),
+        embedding_metadata_path=mondo_embedding_metadata_path(),
+        embedding_model_path=embedding_model_path(),
+        similarity_threshold=similarity_threshold,
+        ontology_obo_path=mondo_obo_path(),
+        ontology_prefix="mondo",
+        # disease
+        root_term="MONDO:0000001",
+    )
+
+
+def ncit_vec_similarity_matcher(similarity_threshold: float) -> VectorSimilarityMatcher:
+    return VectorSimilarityMatcher(
+        embedding_path=ncit_embedding_path(),
+        embedding_metadata_path=ncit_embedding_metadata_path(),
+        embedding_model_path=embedding_model_path(),
+        similarity_threshold=similarity_threshold,
+        ontology_obo_path=ncit_obo_path(),
+        ontology_prefix="ncit",
+        # organism
+        root_term="NCIT:C14250",
+    )
+
+
 def hpo_human_matcher(number_of_candidates: int) -> HumanMatcher:
     return HumanMatcher(
         hpo_console_interface(),
@@ -240,10 +352,28 @@ def hpo_human_matcher(number_of_candidates: int) -> HumanMatcher:
     )
 
 
+def mondo_human_matcher(number_of_candidates: int) -> HumanMatcher:
+    return HumanMatcher(
+        mondo_console_interface(),
+        mondo_vec_similarity_retriever(
+            similarity_threshold=0, number_of_candidates=number_of_candidates
+        ),
+    )
+
+
 def hgnc_human_matcher(number_of_candidates: int) -> HumanMatcher:
     return HumanMatcher(
         hgnc_console_interface(),
         hgnc_vec_similarity_retriever(
+            similarity_threshold=0, number_of_candidates=number_of_candidates
+        ),
+    )
+
+
+def ncit_human_matcher(number_of_candidates: int) -> HumanMatcher:
+    return HumanMatcher(
+        ncit_console_interface(),
+        ncit_vec_similarity_retriever(
             similarity_threshold=0, number_of_candidates=number_of_candidates
         ),
     )
@@ -283,6 +413,15 @@ def hgnc_console_interface() -> ConsoleInterface:
     )
 
 
+def ncit_console_interface() -> ConsoleInterface:
+    return ConsoleInterface(
+        ontology_prefix="ncit",
+        ontology_obo_path=ncit_obo_path(),
+        # organism
+        root_term="NCIT:C14250",
+    )
+
+
 # ---COMBINED_MATCHERS---
 
 
@@ -301,6 +440,12 @@ def mondo_syn_matcher() -> CombinedMatcher:
 def hgnc_syn_matcher() -> CombinedMatcher:
     return CombinedMatcher(
         hgnc_syn_retriever(), choose_first_resolver(), "SynonymMatcher(HGNC)"
+    )
+
+
+def ncit_syn_matcher() -> CombinedMatcher:
+    return CombinedMatcher(
+        ncit_syn_retriever(), choose_first_resolver(), "SynonymMatcher(NCIT)"
     )
 
 
