@@ -5,6 +5,8 @@ from scripts.fixtures import (
     maxo_exact_matcher,
     maxo_vec_similarity_matcher,
     maxo_syn_matcher,
+    maxo_human_matcher,
+    null_matcher,
 )
 
 
@@ -21,6 +23,8 @@ def main():
             maxo_exact_matcher(),
             maxo_syn_matcher(),
             maxo_vec_similarity_matcher(similarity_threshold=0.7),
+            maxo_human_matcher(number_of_candidates=5),
+            null_matcher(),
         ]
     )
 
